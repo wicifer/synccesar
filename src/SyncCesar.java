@@ -3,17 +3,22 @@ import java.io.*;
 import java.util.*;
 import javax.swing.*;
 
-public class SchoolManagementSystem {
+public class SyncCesar {
     private JFrame frame;
     private JTabbedPane tabbedPane;
     private ArrayList<Task> tasks;
     private ArrayList<Evento> eventos;
 
-    public SchoolManagementSystem() {
-        frame = new JFrame("School Management System");
+    private final Color PURPLE_PRIMARY = new Color(102, 51, 153);
+    private final Color PURPLE_LIGHT = new Color(147, 112, 219);
+    private final Color PURPLE_DARK = new Color(75, 0, 130);
+    private final Color PURPLE_BACKGROUND = new Color(245, 240, 255);
+
+    public SyncCesar() {
+        frame = new JFrame("SyncCesar");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(800, 600);
-        tabbedPane = new JTabbedPane();
+        frame.getContentPane().setBackground(PURPLE_BACKGROUND);
         tasks = new ArrayList<>();
         eventos = new ArrayList<>();
 
@@ -95,13 +100,7 @@ public class SchoolManagementSystem {
             } else {
                 saveUserToFile(email, password, hint);
                 JOptionPane.showMessageDialog(frame, "Usuário cadastrado com sucesso!");
-                frame.getContentPane().removeAll();
-                createDashboardPanel();
-                createCalendarPanel();
-                createNotificationsPanel();
-                frame.add(tabbedPane);
-                frame.revalidate();
-                frame.repaint();
+                createMainPanel();
             }
         });
 
@@ -180,13 +179,7 @@ public class SchoolManagementSystem {
 
             if (authenticateUser(email, password)) {
                 JOptionPane.showMessageDialog(frame, "Login bem-sucedido! Bem-vindo(a), " + email);
-                frame.getContentPane().removeAll();
-                createDashboardPanel();
-                createCalendarPanel();
-                createNotificationsPanel();
-                frame.add(tabbedPane);
-                frame.revalidate();
-                frame.repaint();
+                createMainPanel();
             } else {
                 JOptionPane.showMessageDialog(frame, "Email ou senha incorretos. Tente novamente.", "Erro de Login", JOptionPane.ERROR_MESSAGE);
             }
@@ -241,27 +234,176 @@ public class SchoolManagementSystem {
         return null;
     }
 
-    private void createDashboardPanel() {
-        JPanel dashboardPanel = new JPanel(new GridLayout(3, 1));
-        dashboardPanel.add(new JLabel("Bem-vindo ao Painel!"));
-        tabbedPane.addTab("Dashboard", dashboardPanel);
+    private void createMainPanel() {
+        frame.getContentPane().removeAll();
+        
+        JPanel mainPanel = new JPanel(new BorderLayout());
+        mainPanel.setBackground(PURPLE_BACKGROUND);
+        
+        JPanel sideMenu = new JPanel();
+        sideMenu.setLayout(new BoxLayout(sideMenu, BoxLayout.Y_AXIS));
+        sideMenu.setPreferredSize(new Dimension(150, frame.getHeight()));
+        sideMenu.setBorder(BorderFactory.createEtchedBorder());
+        sideMenu.setBackground(PURPLE_PRIMARY);
+
+        String[] menuItems = {"Dashboard", "Calendário", "Pendências", "Notificações"};
+        CardLayout cardLayout = new CardLayout();
+        JPanel contentPanel = new JPanel(cardLayout);
+        contentPanel.setBackground(PURPLE_BACKGROUND);
+
+        JPanel dashboardPanel = createDashboardContent();
+        JPanel calendarPanel = createCalendarContent();
+        JPanel pendenciasPanel = createPendenciasContent();
+        JPanel notificationsPanel = createNotificationsContent();
+
+        contentPanel.add(dashboardPanel, "Dashboard");
+        contentPanel.add(calendarPanel, "Calendário");
+        contentPanel.add(pendenciasPanel, "Pendências");
+        contentPanel.add(notificationsPanel, "Notificações");
+
+        for (String menuItem : menuItems) {
+            JButton menuButton = new JButton(menuItem);
+            menuButton.setMaximumSize(new Dimension(150, 40));
+            menuButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+            
+            menuButton.setFocusPainted(false);
+            menuButton.setBorderPainted(false);
+            menuButton.setBackground(PURPLE_PRIMARY);
+            menuButton.setForeground(Color.WHITE);
+            
+            menuButton.addActionListener(e -> cardLayout.show(contentPanel, menuItem));
+            
+            menuButton.addMouseListener(new java.awt.event.MouseAdapter() {
+                public void mouseEntered(java.awt.event.MouseEvent evt) {
+                    menuButton.setBackground(PURPLE_LIGHT);
+                }
+
+                public void mouseExited(java.awt.event.MouseEvent evt) {
+                    menuButton.setBackground(PURPLE_PRIMARY);
+                }
+            });
+            
+            sideMenu.add(menuButton);
+            sideMenu.add(Box.createRigidArea(new Dimension(0, 5)));
+        }
+
+        mainPanel.add(sideMenu, BorderLayout.WEST);
+        mainPanel.add(contentPanel, BorderLayout.CENTER);
+
+        frame.add(mainPanel);
+        frame.revalidate();
+        frame.repaint();
     }
 
-    private void createCalendarPanel() {
-        JPanel calendarPanel = new JPanel(new BorderLayout());
+    private JPanel createDashboardContent() {
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setBackground(PURPLE_BACKGROUND);
 
+        // Painel para o título
+        JPanel titlePanel = new JPanel();
+        titlePanel.setBackground(PURPLE_BACKGROUND);
+        JLabel titleLabel = new JLabel("Dashboard", SwingConstants.CENTER);
+        titleLabel.setFont(new Font("Arial", Font.BOLD, 24));
+        titleLabel.setForeground(PURPLE_DARK);
+        titlePanel.add(titleLabel);
+        panel.add(titlePanel, BorderLayout.NORTH);
+
+        // Painel para as quatro seções
+        JPanel gridPanel = new JPanel(new GridLayout(2, 2, 20, 20));
+        gridPanel.setBackground(PURPLE_BACKGROUND);
+        gridPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+
+        // Criar as quatro seções
+        String[][] sections = {
+            {"Provas", "60"},
+            {"Pagamentos", "45"},
+            {"Aulas", "75"},
+            {"Atividade 4", "100"}
+        };
+
+        for (String[] section : sections) {
+            JPanel sectionPanel = createSectionPanel(section[0], Integer.parseInt(section[1]));
+            gridPanel.add(sectionPanel);
+        }
+
+        panel.add(gridPanel, BorderLayout.CENTER);
+        return panel;
+    }
+
+    private JPanel createSectionPanel(String title, int percentage) {
+        JPanel sectionPanel = new JPanel();
+        sectionPanel.setLayout(new BoxLayout(sectionPanel, BoxLayout.Y_AXIS));
+        sectionPanel.setBackground(Color.WHITE);
+        sectionPanel.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(PURPLE_PRIMARY, 2),
+            BorderFactory.createEmptyBorder(10, 10, 10, 10)
+        ));
+
+        // Título da seção
+        JLabel titleLabel = new JLabel(title);
+        titleLabel.setFont(new Font("Arial", Font.BOLD, 16));
+        titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        titleLabel.setForeground(PURPLE_DARK);
+
+        // Barra de progresso
+        JProgressBar progressBar = new JProgressBar(0, 100);
+        progressBar.setValue(percentage);
+        progressBar.setStringPainted(true);
+        progressBar.setString(percentage + "%");
+        progressBar.setForeground(PURPLE_PRIMARY);
+        progressBar.setBackground(Color.LIGHT_GRAY);
+        progressBar.setPreferredSize(new Dimension(150, 20));
+        progressBar.setMaximumSize(new Dimension(150, 20));
+        progressBar.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        // Adicionar componentes ao painel
+        sectionPanel.add(titleLabel);
+        sectionPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+        sectionPanel.add(progressBar);
+
+        return sectionPanel;
+    }
+
+    private JPanel createCalendarContent() {
+        JPanel panel = new JPanel(new BorderLayout());
+        
         JButton addEventButton = new JButton("Adicionar Evento");
-        addEventButton.addActionListener(e -> showAddEventDialog(calendarPanel));
-        calendarPanel.add(addEventButton, BorderLayout.NORTH);
+        addEventButton.addActionListener(e -> showAddEventDialog(panel));
+        panel.add(addEventButton, BorderLayout.NORTH);
 
         JTextArea monthView = new JTextArea();
         monthView.setEditable(false);
         JScrollPane scrollPane = new JScrollPane(monthView);
-        calendarPanel.add(scrollPane, BorderLayout.CENTER);
-
-        tabbedPane.addTab("Calendário", calendarPanel);
+        panel.add(scrollPane, BorderLayout.CENTER);
 
         updateMonthView(monthView);
+        
+        return panel;
+    }
+
+    private JPanel createPendenciasContent() {
+        JPanel panel = new JPanel(new BorderLayout());
+        
+        JTextArea pendenciasArea = new JTextArea();
+        pendenciasArea.setEditable(false);
+        JScrollPane scrollPane = new JScrollPane(pendenciasArea);
+        panel.add(scrollPane, BorderLayout.CENTER);
+
+        if (hasPendencias()) {
+            JButton notifyButton = new JButton("Notificar Responsáveis");
+            notifyButton.addActionListener(e -> notifyResponsaveis());
+            panel.add(notifyButton, BorderLayout.NORTH);
+        }
+
+        updatePendenciasView(pendenciasArea);
+        
+        return panel;
+    }
+
+    private JPanel createNotificationsContent() {
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.add(new JLabel("Notificações aparecerão aqui", SwingConstants.CENTER), BorderLayout.CENTER);
+        return panel;
     }
 
     private void showAddEventDialog(JPanel calendarPanel) {
@@ -321,6 +463,31 @@ public class SchoolManagementSystem {
 
             dialog.dispose();
             updateMonthView((JTextArea) ((JScrollPane) calendarPanel.getComponent(1)).getViewport().getView());
+            
+            for (Component comp : tabbedPane.getComponents()) {
+                if (comp instanceof JPanel && tabbedPane.indexOfComponent(comp) == tabbedPane.indexOfTab("Pendências")) {
+                    JPanel pendenciasPanel = (JPanel) comp;
+                    
+                    if (pendenciasPanel.getComponent(0) instanceof JPanel) {
+                        pendenciasPanel.remove(0);
+                    }
+                    
+                    if (hasPendencias()) {
+                        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+                        JButton notifyButton = new JButton("Notificar Responsáveis");
+                        notifyButton.addActionListener(evt -> notifyResponsaveis());
+                        buttonPanel.add(notifyButton);
+                        pendenciasPanel.add(buttonPanel, BorderLayout.NORTH);
+                    }
+                    
+                    JTextArea pendenciasArea = (JTextArea) ((JScrollPane) pendenciasPanel.getComponent(pendenciasPanel.getComponentCount() - 1)).getViewport().getView();
+                    updatePendenciasView(pendenciasArea);
+                    
+                    pendenciasPanel.revalidate();
+                    pendenciasPanel.repaint();
+                    break;
+                }
+            }
         });
         dialog.add(saveButton);
 
@@ -406,14 +573,133 @@ public class SchoolManagementSystem {
         }
     }
 
-    private void createNotificationsPanel() {
-        JPanel notificationsPanel = new JPanel();
-        notificationsPanel.add(new JLabel("Notificações aparecerão aqui"));
-        tabbedPane.addTab("Notificações", notificationsPanel);
+    private boolean hasPendencias() {
+        Calendar hoje = Calendar.getInstance();
+        hoje.set(Calendar.HOUR_OF_DAY, 0);
+        hoje.set(Calendar.MINUTE, 0);
+        hoje.set(Calendar.SECOND, 0);
+        hoje.set(Calendar.MILLISECOND, 0);
+
+        for (Evento evento : eventos) {
+            if ("pendente".equalsIgnoreCase(evento.getStatus())) {
+                try {
+                    Calendar dataEvento = Calendar.getInstance();
+                    String[] dataParts = evento.getData().split("/");
+                    dataEvento.set(
+                        Integer.parseInt(dataParts[2]),
+                        Integer.parseInt(dataParts[1]) - 1,
+                        Integer.parseInt(dataParts[0])
+                    );
+                    dataEvento.set(Calendar.HOUR_OF_DAY, 0);
+                    dataEvento.set(Calendar.MINUTE, 0);
+                    dataEvento.set(Calendar.SECOND, 0);
+                    dataEvento.set(Calendar.MILLISECOND, 0);
+
+                    if (dataEvento.before(hoje)) {
+                        return true;
+                    }
+                } catch (Exception e) {
+                    System.err.println("Erro ao processar data do evento: " + evento.getTitulo());
+                }
+            }
+        }
+        return false;
+    }
+
+    private void notifyResponsaveis() {
+        int pendenciasCount = 0;
+        Calendar hoje = Calendar.getInstance();
+        hoje.set(Calendar.HOUR_OF_DAY, 0);
+        hoje.set(Calendar.MINUTE, 0);
+        hoje.set(Calendar.SECOND, 0);
+        hoje.set(Calendar.MILLISECOND, 0);
+
+        for (Evento evento : eventos) {
+            if ("pendente".equalsIgnoreCase(evento.getStatus())) {
+                try {
+                    Calendar dataEvento = Calendar.getInstance();
+                    String[] dataParts = evento.getData().split("/");
+                    dataEvento.set(
+                        Integer.parseInt(dataParts[2]),
+                        Integer.parseInt(dataParts[1]) - 1,
+                        Integer.parseInt(dataParts[0])
+                    );
+                    dataEvento.set(Calendar.HOUR_OF_DAY, 0);
+                    dataEvento.set(Calendar.MINUTE, 0);
+                    dataEvento.set(Calendar.SECOND, 0);
+                    dataEvento.set(Calendar.MILLISECOND, 0);
+
+                    if (dataEvento.before(hoje)) {
+                        pendenciasCount++;
+                    }
+                } catch (Exception e) {
+                    System.err.println("Erro ao processar data do evento: " + evento.getTitulo());
+                }
+            }
+        }
+
+        if (pendenciasCount > 0) {
+            JOptionPane.showMessageDialog(frame,
+                "Email enviado para os responsáveis de " + pendenciasCount + " evento(s) pendente(s).",
+                "Notificação Enviada",
+                JOptionPane.INFORMATION_MESSAGE);
+        } else {
+            JOptionPane.showMessageDialog(frame,
+                "Não há eventos pendentes para notificar.",
+                "Notificação",
+                JOptionPane.INFORMATION_MESSAGE);
+        }
+    }
+
+    private void updatePendenciasView(JTextArea pendenciasArea) {
+        StringBuilder pendenciasText = new StringBuilder("Eventos Pendentes:\n\n");
+        Calendar hoje = Calendar.getInstance();
+        hoje.set(Calendar.HOUR_OF_DAY, 0);
+        hoje.set(Calendar.MINUTE, 0);
+        hoje.set(Calendar.SECOND, 0);
+        hoje.set(Calendar.MILLISECOND, 0);
+
+        boolean temPendencias = false;
+
+        for (Evento evento : eventos) {
+            try {
+                Calendar dataEvento = Calendar.getInstance();
+                String[] dataParts = evento.getData().split("/");
+                dataEvento.set(
+                    Integer.parseInt(dataParts[2]), // ano
+                    Integer.parseInt(dataParts[1]) - 1, // mês (0-11)
+                    Integer.parseInt(dataParts[0]) // dia
+                );
+                dataEvento.set(Calendar.HOUR_OF_DAY, 0);
+                dataEvento.set(Calendar.MINUTE, 0);
+                dataEvento.set(Calendar.SECOND, 0);
+                dataEvento.set(Calendar.MILLISECOND, 0);
+
+                if (dataEvento.before(hoje)) {
+                    temPendencias = true;
+                    pendenciasText.append("Título: ").append(evento.getTitulo()).append("\n")
+                                .append("Data e Hora: ").append(evento.getData()).append(" ")
+                                .append(evento.getHora()).append("\n")
+                                .append("Tipo: ").append(evento.getTipo()).append("\n")
+                                .append("Status: ").append(evento.getStatus()).append("\n")
+                                .append("Descrição: ").append(evento.getDescricao()).append("\n")
+                                .append("----------------------------------------\n");
+                }
+            } catch (Exception e) {
+                System.err.println("Erro ao processar data do evento: " + evento.getTitulo());
+                e.printStackTrace();
+            }
+        }
+
+        if (!temPendencias) {
+            pendenciasText.append("Não há eventos pendentes atrasados.");
+        }
+
+        pendenciasArea.setText(pendenciasText.toString());
     }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(SchoolManagementSystem::new);
+        SwingUtilities.invokeLater(SyncCesar::new);
     }
 }
 
