@@ -2,6 +2,7 @@ import java.awt.*;
 import java.io.*;
 import java.util.*;
 import javax.swing.*;
+import java.util.List;
 
 public class SyncCesar {
     private JFrame frame;
@@ -14,6 +15,9 @@ public class SyncCesar {
     private final Color PURPLE_DARK = new Color(75, 0, 130);
     private final Color PURPLE_BACKGROUND = new Color(245, 240, 255);
 
+    private static final String DATA_DIR = "data";
+    private static final String EVENTOS_FILE = DATA_DIR + "/eventos.txt";
+
     public SyncCesar() {
         frame = new JFrame("SyncCesar");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -21,6 +25,28 @@ public class SyncCesar {
         frame.getContentPane().setBackground(PURPLE_BACKGROUND);
         tasks = new ArrayList<>();
         eventos = new ArrayList<>();
+
+        // Criar diretório de dados se não existir
+        File dataDir = new File(DATA_DIR);
+        if (!dataDir.exists()) {
+            if (dataDir.mkdirs()) {
+                System.out.println("Diretório criado: " + DATA_DIR);
+            } else {
+                System.err.println("Não foi possível criar o diretório: " + DATA_DIR);
+            }
+        }
+
+        // Criar arquivo de eventos se não existir
+        File eventosFile = new File(EVENTOS_FILE);
+        if (!eventosFile.exists()) {
+            try {
+                if (eventosFile.createNewFile()) {
+                    System.out.println("Arquivo criado: " + EVENTOS_FILE);
+                }
+            } catch (IOException e) {
+                System.err.println("Erro ao criar arquivo: " + e.getMessage());
+            }
+        }
 
         loadEventsFromFile();
 
@@ -246,19 +272,17 @@ public class SyncCesar {
         sideMenu.setBorder(BorderFactory.createEtchedBorder());
         sideMenu.setBackground(PURPLE_PRIMARY);
 
-        String[] menuItems = {"Dashboard", "Calendário", "Pendências", "Notificações"};
+        String[] menuItems = {"Dashboard", "Calendário", "Notificações"};
         CardLayout cardLayout = new CardLayout();
         JPanel contentPanel = new JPanel(cardLayout);
         contentPanel.setBackground(PURPLE_BACKGROUND);
 
         JPanel dashboardPanel = createDashboardContent();
         JPanel calendarPanel = createCalendarContent();
-        JPanel pendenciasPanel = createPendenciasContent();
         JPanel notificationsPanel = createNotificationsContent();
 
         contentPanel.add(dashboardPanel, "Dashboard");
         contentPanel.add(calendarPanel, "Calendário");
-        contentPanel.add(pendenciasPanel, "Pendências");
         contentPanel.add(notificationsPanel, "Notificações");
 
         for (String menuItem : menuItems) {
@@ -308,12 +332,18 @@ public class SyncCesar {
         titlePanel.add(titleLabel);
         panel.add(titlePanel, BorderLayout.NORTH);
 
-        // Painel para as quatro seções
-        JPanel gridPanel = new JPanel(new GridLayout(2, 2, 20, 20));
-        gridPanel.setBackground(PURPLE_BACKGROUND);
-        gridPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        // Painel principal com GridBagLayout para melhor controle do layout
+        JPanel mainPanel = new JPanel(new GridBagLayout());
+        mainPanel.setBackground(PURPLE_BACKGROUND);
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(10, 10, 10, 10);
 
-        // Criar as quatro seções
+        // Painel para as quatro seções de status
+        JPanel statusPanel = new JPanel(new GridLayout(2, 2, 20, 20));
+        statusPanel.setBackground(PURPLE_BACKGROUND);
+        statusPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+
+        // Criar as quatro seções de status
         String[][] sections = {
             {"Provas", "60"},
             {"Pagamentos", "45"},
@@ -323,11 +353,217 @@ public class SyncCesar {
 
         for (String[] section : sections) {
             JPanel sectionPanel = createSectionPanel(section[0], Integer.parseInt(section[1]));
-            gridPanel.add(sectionPanel);
+            statusPanel.add(sectionPanel);
         }
 
-        panel.add(gridPanel, BorderLayout.CENTER);
+        // Adicionar painel de status
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.weightx = 1.0;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        mainPanel.add(statusPanel, gbc);
+
+        // Criar seção de pendências
+        JPanel pendenciasPanel = createPendenciasDashboardPanel();
+        gbc.gridy = 1;
+        gbc.weighty = 1.0;
+        gbc.fill = GridBagConstraints.BOTH;
+        mainPanel.add(pendenciasPanel, gbc);
+
+        panel.add(mainPanel, BorderLayout.CENTER);
         return panel;
+    }
+
+    private JPanel createPendenciasDashboardPanel() {
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setBackground(Color.WHITE);
+        panel.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(PURPLE_PRIMARY, 2),
+            BorderFactory.createEmptyBorder(10, 10, 10, 10)
+        ));
+
+        // Cabeçalho do quadro
+        JPanel headerPanel = new JPanel(new BorderLayout(15, 0));
+        headerPanel.setBackground(PURPLE_PRIMARY);
+        headerPanel.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
+
+        // Painel esquerdo para título e contador
+        JPanel leftPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
+        leftPanel.setBackground(PURPLE_PRIMARY);
+        
+        JLabel titleLabel = new JLabel("Eventos Pendentes");
+        titleLabel.setFont(new Font("Arial", Font.BOLD, 16));
+        titleLabel.setForeground(Color.WHITE);
+        leftPanel.add(titleLabel);
+
+        // Contador de pendências
+        int pendenciasCount = countPendencias();
+        JLabel countLabel = new JLabel(pendenciasCount + " pendência(s)");
+        countLabel.setForeground(Color.WHITE);
+        leftPanel.add(countLabel);
+
+        headerPanel.add(leftPanel, BorderLayout.WEST);
+
+        // Botão de notificação
+        if (hasPendencias()) {
+            JButton notifyButton = new JButton("Notificar Responsáveis");
+            notifyButton.setBackground(Color.WHITE);
+            notifyButton.setForeground(PURPLE_DARK);
+            notifyButton.setFont(new Font("Arial", Font.BOLD, 12));
+            notifyButton.setFocusPainted(false);
+            notifyButton.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
+            notifyButton.addActionListener(e -> notifyResponsaveis());
+            
+            // Efeito hover
+            notifyButton.addMouseListener(new java.awt.event.MouseAdapter() {
+                public void mouseEntered(java.awt.event.MouseEvent evt) {
+                    notifyButton.setBackground(PURPLE_LIGHT);
+                    notifyButton.setForeground(Color.WHITE);
+                }
+
+                public void mouseExited(java.awt.event.MouseEvent evt) {
+                    notifyButton.setBackground(Color.WHITE);
+                    notifyButton.setForeground(PURPLE_DARK);
+                }
+            });
+            
+            headerPanel.add(notifyButton, BorderLayout.EAST);
+        }
+
+        panel.add(headerPanel, BorderLayout.NORTH);
+
+        // Painel de eventos pendentes com scroll
+        JPanel eventsPanel = new JPanel();
+        eventsPanel.setLayout(new BoxLayout(eventsPanel, BoxLayout.Y_AXIS));
+        eventsPanel.setBackground(Color.WHITE);
+
+        // Verifica se há eventos para processar
+        if (!eventos.isEmpty()) {
+            Calendar hoje = Calendar.getInstance();
+            hoje.set(Calendar.HOUR_OF_DAY, 0);
+            hoje.set(Calendar.MINUTE, 0);
+            hoje.set(Calendar.SECOND, 0);
+            hoje.set(Calendar.MILLISECOND, 0);
+
+            for (Evento evento : eventos) {
+                try {
+                    Calendar dataEvento = Calendar.getInstance();
+                    String[] dataParts = evento.getData().split("/");
+                    int dia = Integer.parseInt(dataParts[0]);
+                    int mes = Integer.parseInt(dataParts[1]) - 1; // Mês começa em 0
+                    int ano = Integer.parseInt(dataParts[2]);
+                    
+                    dataEvento.set(ano, mes, dia, 0, 0, 0);
+                    dataEvento.set(Calendar.MILLISECOND, 0);
+
+                    if (dataEvento.before(hoje) && "pendente".equalsIgnoreCase(evento.getStatus())) {
+                        JPanel eventCard = createPendenciaMiniCard(evento);
+                        eventsPanel.add(eventCard);
+                        eventsPanel.add(Box.createRigidArea(new Dimension(0, 5)));
+                    }
+                } catch (Exception e) {
+                    System.err.println("Erro ao processar data do evento: " + evento.getTitulo());
+                    e.printStackTrace();
+                }
+            }
+
+            if (eventsPanel.getComponentCount() == 0) {
+                JPanel emptyPanel = new JPanel(new BorderLayout());
+                emptyPanel.setBackground(Color.WHITE);
+                JLabel emptyLabel = new JLabel("Não há eventos pendentes", SwingConstants.CENTER);
+                emptyLabel.setForeground(PURPLE_DARK);
+                emptyLabel.setFont(new Font("Arial", Font.PLAIN, 14));
+                emptyPanel.add(emptyLabel, BorderLayout.CENTER);
+                eventsPanel.add(emptyPanel);
+            }
+        } else {
+            JPanel emptyPanel = new JPanel(new BorderLayout());
+            emptyPanel.setBackground(Color.WHITE);
+            JLabel emptyLabel = new JLabel("Não há eventos cadastrados", SwingConstants.CENTER);
+            emptyLabel.setForeground(PURPLE_DARK);
+            emptyLabel.setFont(new Font("Arial", Font.PLAIN, 14));
+            emptyPanel.add(emptyLabel, BorderLayout.CENTER);
+            eventsPanel.add(emptyPanel);
+        }
+
+        JScrollPane scrollPane = new JScrollPane(eventsPanel);
+        scrollPane.setBorder(null);
+        scrollPane.getVerticalScrollBar().setUnitIncrement(16);
+        panel.add(scrollPane, BorderLayout.CENTER);
+
+        return panel;
+    }
+
+    // Método auxiliar para contar pendências
+    private int countPendencias() {
+        Calendar hoje = Calendar.getInstance();
+        hoje.set(Calendar.HOUR_OF_DAY, 0);
+        hoje.set(Calendar.MINUTE, 0);
+        hoje.set(Calendar.SECOND, 0);
+        hoje.set(Calendar.MILLISECOND, 0);
+
+        int count = 0;
+        for (Evento evento : eventos) {
+            if ("pendente".equalsIgnoreCase(evento.getStatus())) {
+                try {
+                    Calendar dataEvento = Calendar.getInstance();
+                    String[] dataParts = evento.getData().split("/");
+                    dataEvento.set(
+                        Integer.parseInt(dataParts[2]),
+                        Integer.parseInt(dataParts[1]) - 1,
+                        Integer.parseInt(dataParts[0])
+                    );
+                    dataEvento.set(Calendar.HOUR_OF_DAY, 0);
+                    dataEvento.set(Calendar.MINUTE, 0);
+                    dataEvento.set(Calendar.SECOND, 0);
+                    dataEvento.set(Calendar.MILLISECOND, 0);
+
+                    if (dataEvento.before(hoje)) {
+                        count++;
+                    }
+                } catch (Exception e) {
+                    System.err.println("Erro ao processar data do evento: " + evento.getTitulo());
+                }
+            }
+        }
+        return count;
+    }
+
+    private JPanel createPendenciaMiniCard(Evento evento) {
+        JPanel card = new JPanel(new BorderLayout());
+        card.setBackground(Color.WHITE);
+        card.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createMatteBorder(0, 0, 1, 0, PURPLE_LIGHT),
+            BorderFactory.createEmptyBorder(8, 8, 8, 8)
+        ));
+        card.setMaximumSize(new Dimension(Integer.MAX_VALUE, 80));
+
+        // Painel esquerdo para título e data
+        JPanel leftPanel = new JPanel();
+        leftPanel.setLayout(new BoxLayout(leftPanel, BoxLayout.Y_AXIS));
+        leftPanel.setBackground(Color.WHITE);
+
+        JLabel titleLabel = new JLabel(evento.getTitulo());
+        titleLabel.setFont(new Font("Arial", Font.BOLD, 14));
+        titleLabel.setForeground(PURPLE_DARK);
+        
+        JLabel dateLabel = new JLabel(evento.getData() + " " + evento.getHora());
+        dateLabel.setFont(new Font("Arial", Font.PLAIN, 12));
+        dateLabel.setForeground(Color.GRAY);
+
+        leftPanel.add(titleLabel);
+        leftPanel.add(Box.createRigidArea(new Dimension(0, 4)));
+        leftPanel.add(dateLabel);
+
+        // Painel direito para tipo
+        JLabel typeLabel = new JLabel(evento.getTipo());
+        typeLabel.setFont(new Font("Arial", Font.PLAIN, 12));
+        typeLabel.setForeground(PURPLE_PRIMARY);
+
+        card.add(leftPanel, BorderLayout.CENTER);
+        card.add(typeLabel, BorderLayout.EAST);
+
+        return card;
     }
 
     private JPanel createSectionPanel(String title, int percentage) {
@@ -345,11 +581,16 @@ public class SyncCesar {
         titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         titleLabel.setForeground(PURPLE_DARK);
 
+        // Label para a porcentagem
+        JLabel percentageLabel = new JLabel(percentage + "%");
+        percentageLabel.setFont(new Font("Arial", Font.BOLD, 14));
+        percentageLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        percentageLabel.setForeground(PURPLE_PRIMARY);
+
         // Barra de progresso
         JProgressBar progressBar = new JProgressBar(0, 100);
         progressBar.setValue(percentage);
-        progressBar.setStringPainted(true);
-        progressBar.setString(percentage + "%");
+        progressBar.setStringPainted(false);  // Removida a string da barra
         progressBar.setForeground(PURPLE_PRIMARY);
         progressBar.setBackground(Color.LIGHT_GRAY);
         progressBar.setPreferredSize(new Dimension(150, 20));
@@ -358,7 +599,9 @@ public class SyncCesar {
 
         // Adicionar componentes ao painel
         sectionPanel.add(titleLabel);
-        sectionPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+        sectionPanel.add(Box.createRigidArea(new Dimension(0, 5)));
+        sectionPanel.add(percentageLabel);
+        sectionPanel.add(Box.createRigidArea(new Dimension(0, 5)));
         sectionPanel.add(progressBar);
 
         return sectionPanel;
@@ -366,19 +609,295 @@ public class SyncCesar {
 
     private JPanel createCalendarContent() {
         JPanel panel = new JPanel(new BorderLayout());
+        panel.setBackground(PURPLE_BACKGROUND);
         
+        // Painel superior com título e botão
+        JPanel headerPanel = new JPanel(new BorderLayout());
+        headerPanel.setBackground(PURPLE_BACKGROUND);
+        
+        // Título do Calendário
+        JLabel titleLabel = new JLabel("Calendário de Eventos", SwingConstants.CENTER);
+        titleLabel.setFont(new Font("Arial", Font.BOLD, 24));
+        titleLabel.setForeground(PURPLE_DARK);
+        headerPanel.add(titleLabel, BorderLayout.CENTER);
+        
+        // Botão de adicionar com texto roxo
         JButton addEventButton = new JButton("Adicionar Evento");
+        addEventButton.setBackground(Color.WHITE);
+        addEventButton.setForeground(PURPLE_DARK);  // Texto roxo escuro
+        addEventButton.setFont(new Font("Arial", Font.BOLD, 12));
+        addEventButton.setFocusPainted(false);
+        addEventButton.setBorder(BorderFactory.createLineBorder(PURPLE_PRIMARY));
         addEventButton.addActionListener(e -> showAddEventDialog(panel));
-        panel.add(addEventButton, BorderLayout.NORTH);
+        
+        // Efeito hover para o botão
+        addEventButton.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                addEventButton.setBackground(PURPLE_LIGHT);
+                addEventButton.setForeground(Color.WHITE);
+            }
 
-        JTextArea monthView = new JTextArea();
-        monthView.setEditable(false);
-        JScrollPane scrollPane = new JScrollPane(monthView);
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                addEventButton.setBackground(Color.WHITE);
+                addEventButton.setForeground(PURPLE_DARK);
+            }
+        });
+        
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        buttonPanel.setBackground(PURPLE_BACKGROUND);
+        buttonPanel.add(addEventButton);
+        headerPanel.add(buttonPanel, BorderLayout.EAST);
+        
+        panel.add(headerPanel, BorderLayout.NORTH);
+
+        // Recarregar eventos antes de exibir
+        loadEventsFromFile();
+        
+        // Painel de eventos
+        JPanel eventsPanel = new JPanel();
+        eventsPanel.setLayout(new BoxLayout(eventsPanel, BoxLayout.Y_AXIS));
+        eventsPanel.setBackground(PURPLE_BACKGROUND);
+        
+        // Organizar eventos por data
+        Map<String, java.util.List<Evento>> eventosPorData = new TreeMap<>();
+        for (Evento evento : eventos) {
+            eventosPorData.computeIfAbsent(evento.getData(), k -> new ArrayList<>()).add(evento);
+        }
+        
+        // Adicionar eventos organizados por data
+        for (Map.Entry<String, java.util.List<Evento>> entry : eventosPorData.entrySet()) {
+            // Adicionar cabeçalho da data
+            JPanel dateHeader = new JPanel(new FlowLayout(FlowLayout.LEFT));
+            dateHeader.setBackground(PURPLE_LIGHT);
+            dateHeader.setMaximumSize(new Dimension(Integer.MAX_VALUE, 30));
+            JLabel dateLabel = new JLabel(formatDate(entry.getKey()));
+            dateLabel.setForeground(Color.WHITE);
+            dateLabel.setFont(new Font("Arial", Font.BOLD, 14));
+            dateHeader.add(dateLabel);
+            eventsPanel.add(dateHeader);
+            
+            // Adicionar eventos do dia
+            for (Evento evento : entry.getValue()) {
+                JPanel eventCard = createEventCard(evento);
+                eventsPanel.add(eventCard);
+                eventsPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+            }
+        }
+        
+        JScrollPane scrollPane = new JScrollPane(eventsPanel);
+        scrollPane.setBackground(PURPLE_BACKGROUND);
+        scrollPane.setBorder(BorderFactory.createEmptyBorder());
+        scrollPane.getVerticalScrollBar().setUnitIncrement(16);
         panel.add(scrollPane, BorderLayout.CENTER);
-
-        updateMonthView(monthView);
         
         return panel;
+    }
+
+    // Método auxiliar para formatar a data
+    private String formatDate(String date) {
+        try {
+            String[] parts = date.split("/");
+            String[] months = {"Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", 
+                             "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"};
+            int month = Integer.parseInt(parts[1]) - 1;
+            return parts[0] + " de " + months[month] + " de " + parts[2];
+        } catch (Exception e) {
+            return date;
+        }
+    }
+
+    private void updateEventCards(JPanel eventsPanel) {
+        eventsPanel.removeAll();
+        
+        for (Evento evento : eventos) {
+            JPanel eventCard = createEventCard(evento);
+            eventsPanel.add(eventCard);
+            eventsPanel.add(Box.createRigidArea(new Dimension(0, 10))); // Spacing between cards
+        }
+        
+        eventsPanel.revalidate();
+        eventsPanel.repaint();
+    }
+
+    private JPanel createEventCard(Evento evento) {
+        JPanel card = new JPanel();
+        card.setLayout(new BoxLayout(card, BoxLayout.Y_AXIS));
+        card.setBackground(Color.WHITE);
+        card.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(PURPLE_PRIMARY),
+            BorderFactory.createEmptyBorder(10, 10, 10, 10)
+        ));
+        card.setMaximumSize(new Dimension(Integer.MAX_VALUE, 150));
+
+        // Title with edit button
+        JPanel titlePanel = new JPanel(new BorderLayout());
+        titlePanel.setBackground(Color.WHITE);
+        JLabel titleLabel = new JLabel(evento.getTitulo());
+        titleLabel.setFont(new Font("Arial", Font.BOLD, 16));
+        titleLabel.setForeground(PURPLE_DARK);
+        titlePanel.add(titleLabel, BorderLayout.WEST);
+
+        // Button panel
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        buttonPanel.setBackground(Color.WHITE);
+
+        // Edit button
+        JButton editButton = new JButton("Editar");
+        editButton.setBackground(PURPLE_PRIMARY);
+        editButton.setForeground(PURPLE_DARK);
+        editButton.setFont(new Font("Arial", Font.BOLD, 12));
+        editButton.setBorderPainted(false);
+        editButton.setFocusPainted(false);
+        editButton.addActionListener(e -> editEvent(evento));
+
+        // Delete button
+        JButton deleteButton = new JButton("Excluir");
+        deleteButton.setBackground(Color.WHITE);
+        deleteButton.setForeground(PURPLE_DARK);
+        deleteButton.setFont(new Font("Arial", Font.BOLD, 12));
+        deleteButton.setBorderPainted(true);
+        deleteButton.setBorder(BorderFactory.createLineBorder(PURPLE_PRIMARY));
+        deleteButton.setFocusPainted(false);
+        deleteButton.addActionListener(e -> deleteEvent(evento));
+
+        // Status button
+        JButton statusButton = new JButton(evento.getStatus());
+        statusButton.setBackground("pendente".equals(evento.getStatus()) ? PURPLE_LIGHT : PURPLE_PRIMARY);
+        statusButton.setForeground(Color.BLACK);
+        statusButton.setFont(new Font("Arial", Font.BOLD, 12));
+        statusButton.setBorderPainted(false);
+        statusButton.setFocusPainted(false);
+        statusButton.addActionListener(e -> toggleEventStatus(evento));
+
+        buttonPanel.add(statusButton);
+        buttonPanel.add(editButton);
+        buttonPanel.add(deleteButton);
+        titlePanel.add(buttonPanel, BorderLayout.EAST);
+
+        // Event details
+        JPanel detailsPanel = new JPanel(new GridLayout(4, 1, 5, 5));
+        detailsPanel.setBackground(Color.WHITE);
+        
+        // Labels com texto roxo escuro
+        JLabel dataLabel = new JLabel("Data: " + evento.getData() + " " + evento.getHora());
+        JLabel tipoLabel = new JLabel("Tipo: " + evento.getTipo());
+        JLabel statusLabel = new JLabel("Status: " + evento.getStatus());
+        JLabel descLabel = new JLabel("Descrição: " + evento.getDescricao());
+        
+        // Definir cor roxa escura para todos os labels
+        dataLabel.setForeground(PURPLE_DARK);
+        tipoLabel.setForeground(PURPLE_DARK);
+        statusLabel.setForeground(PURPLE_DARK);
+        descLabel.setForeground(PURPLE_DARK);
+        
+        detailsPanel.add(dataLabel);
+        detailsPanel.add(tipoLabel);
+        detailsPanel.add(statusLabel);
+        detailsPanel.add(descLabel);
+
+        card.add(titlePanel);
+        card.add(Box.createRigidArea(new Dimension(0, 5)));
+        card.add(detailsPanel);
+
+        return card;
+    }
+
+    private void editEvent(Evento evento) {
+        JDialog dialog = new JDialog(frame, "Editar Evento", true);
+        dialog.setSize(300, 450);
+        dialog.setLayout(new GridLayout(7, 2, 10, 10));
+
+        JTextField titleField = new JTextField(evento.getTitulo());
+        JTextField dateField = new JTextField(evento.getData());
+        JTextField timeField = new JTextField(evento.getHora());
+        JTextField typeField = new JTextField(evento.getTipo());
+        JTextField statusField = new JTextField(evento.getStatus());
+        JTextArea descriptionField = new JTextArea(evento.getDescricao());
+
+        dialog.add(new JLabel("Título:"));
+        dialog.add(titleField);
+        dialog.add(new JLabel("Data:"));
+        dialog.add(dateField);
+        dialog.add(new JLabel("Hora:"));
+        dialog.add(timeField);
+        dialog.add(new JLabel("Tipo:"));
+        dialog.add(typeField);
+        dialog.add(new JLabel("Status:"));
+        dialog.add(statusField);
+        dialog.add(new JLabel("Descrição:"));
+        dialog.add(new JScrollPane(descriptionField));
+
+        JButton saveButton = new JButton("Salvar");
+        saveButton.addActionListener(e -> {
+            eventos.remove(evento);
+            Evento updatedEvento = new Evento(
+                titleField.getText(),
+                dateField.getText(),
+                timeField.getText(),
+                typeField.getText(),
+                statusField.getText(),
+                descriptionField.getText()
+            );
+            eventos.add(updatedEvento);
+            saveEventsToFile();
+            updateEventCards((JPanel)((JScrollPane)((JPanel)frame.getContentPane()
+                .getComponent(0)).getComponent(1)).getViewport().getView());
+            dialog.dispose();
+        });
+        dialog.add(saveButton);
+
+        dialog.setVisible(true);
+    }
+
+    private void deleteEvent(Evento evento) {
+        int confirm = JOptionPane.showConfirmDialog(
+            frame,
+            "Tem certeza que deseja excluir este evento?",
+            "Confirmar Exclusão",
+            JOptionPane.YES_NO_OPTION
+        );
+        
+        if (confirm == JOptionPane.YES_OPTION) {
+            eventos.remove(evento);
+            saveEventsToFile();
+            updateEventCards((JPanel)((JScrollPane)((JPanel)frame.getContentPane()
+                .getComponent(0)).getComponent(1)).getViewport().getView());
+        }
+    }
+
+    private void toggleEventStatus(Evento evento) {
+        String newStatus = "pendente".equals(evento.getStatus()) ? "concluído" : "pendente";
+        Evento updatedEvento = new Evento(
+            evento.getTitulo(),
+            evento.getData(),
+            evento.getHora(),
+            evento.getTipo(),
+            newStatus,
+            evento.getDescricao()
+        );
+        eventos.remove(evento);
+        eventos.add(updatedEvento);
+        saveEventsToFile();
+        updateEventCards((JPanel)((JScrollPane)((JPanel)frame.getContentPane()
+            .getComponent(0)).getComponent(1)).getViewport().getView());
+    }
+
+    private void saveEventsToFile() {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(EVENTOS_FILE))) {
+            for (Evento evento : eventos) {
+                writer.write(String.format("%s,%s,%s,%s,%s,%s",
+                    evento.getTitulo(),
+                    evento.getData(),
+                    evento.getHora(),
+                    evento.getTipo(),
+                    evento.getStatus(),
+                    evento.getDescricao()
+                ));
+                writer.newLine();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private JPanel createPendenciasContent() {
@@ -458,36 +977,54 @@ public class SyncCesar {
 
             Evento evento = new Evento(title, date, time, type, status, description);
             eventos.add(evento);
-
             saveEventToFile(evento);
-
             dialog.dispose();
-            updateMonthView((JTextArea) ((JScrollPane) calendarPanel.getComponent(1)).getViewport().getView());
+
+            // Recriar o painel de calendário
+            Component[] components = calendarPanel.getComponents();
+            calendarPanel.removeAll();
             
-            for (Component comp : tabbedPane.getComponents()) {
-                if (comp instanceof JPanel && tabbedPane.indexOfComponent(comp) == tabbedPane.indexOfTab("Pendências")) {
-                    JPanel pendenciasPanel = (JPanel) comp;
-                    
-                    if (pendenciasPanel.getComponent(0) instanceof JPanel) {
-                        pendenciasPanel.remove(0);
-                    }
-                    
-                    if (hasPendencias()) {
-                        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-                        JButton notifyButton = new JButton("Notificar Responsáveis");
-                        notifyButton.addActionListener(evt -> notifyResponsaveis());
-                        buttonPanel.add(notifyButton);
-                        pendenciasPanel.add(buttonPanel, BorderLayout.NORTH);
-                    }
-                    
-                    JTextArea pendenciasArea = (JTextArea) ((JScrollPane) pendenciasPanel.getComponent(pendenciasPanel.getComponentCount() - 1)).getViewport().getView();
-                    updatePendenciasView(pendenciasArea);
-                    
-                    pendenciasPanel.revalidate();
-                    pendenciasPanel.repaint();
-                    break;
+            // Recriar o cabeçalho
+            JPanel headerPanel = (JPanel) components[0];
+            calendarPanel.add(headerPanel, BorderLayout.NORTH);
+            
+            // Recriar o painel de eventos
+            JPanel eventsPanel = new JPanel();
+            eventsPanel.setLayout(new BoxLayout(eventsPanel, BoxLayout.Y_AXIS));
+            eventsPanel.setBackground(PURPLE_BACKGROUND);
+            
+            // Organizar eventos por data
+            Map<String, java.util.List<Evento>> eventosPorData = new TreeMap<>();
+            for (Evento evt : eventos) {
+                eventosPorData.computeIfAbsent(evt.getData(), k -> new ArrayList<>()).add(evt);
+            }
+            
+            // Adicionar eventos organizados por data
+            for (Map.Entry<String, java.util.List<Evento>> entry : eventosPorData.entrySet()) {
+                JPanel dateHeader = new JPanel(new FlowLayout(FlowLayout.LEFT));
+                dateHeader.setBackground(PURPLE_LIGHT);
+                dateHeader.setMaximumSize(new Dimension(Integer.MAX_VALUE, 30));
+                JLabel dateLabel = new JLabel(formatDate(entry.getKey()));
+                dateLabel.setForeground(Color.WHITE);
+                dateLabel.setFont(new Font("Arial", Font.BOLD, 14));
+                dateHeader.add(dateLabel);
+                eventsPanel.add(dateHeader);
+                
+                for (Evento evt : entry.getValue()) {
+                    JPanel eventCard = createEventCard(evt);
+                    eventsPanel.add(eventCard);
+                    eventsPanel.add(Box.createRigidArea(new Dimension(0, 10)));
                 }
             }
+            
+            JScrollPane scrollPane = new JScrollPane(eventsPanel);
+            scrollPane.setBackground(PURPLE_BACKGROUND);
+            scrollPane.setBorder(BorderFactory.createEmptyBorder());
+            scrollPane.getVerticalScrollBar().setUnitIncrement(16);
+            calendarPanel.add(scrollPane, BorderLayout.CENTER);
+            
+            calendarPanel.revalidate();
+            calendarPanel.repaint();
         });
         dialog.add(saveButton);
 
@@ -548,28 +1085,49 @@ public class SyncCesar {
     }
 
     private void saveEventToFile(Evento evento) {
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter("eventos.txt", true))) {
-            writer.write(evento.getTitulo() + "," + evento.getData() + "," + evento.getHora() + "," + 
-                        evento.getTipo() + "," + evento.getStatus() + "," + evento.getDescricao());
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(EVENTOS_FILE, true))) {
+            String eventoStr = String.format("%s,%s,%s,%s,%s,%s",
+                evento.getTitulo().trim(),
+                evento.getData().trim(),
+                evento.getHora().trim(),
+                evento.getTipo().trim(),
+                evento.getStatus().trim(),
+                evento.getDescricao().trim()
+            );
+            writer.write(eventoStr);
             writer.newLine();
+            System.out.println("Evento salvo: " + eventoStr);
         } catch (IOException e) {
-            e.printStackTrace();
+            System.err.println("Erro ao salvar evento: " + e.getMessage());
         }
     }
 
     private void loadEventsFromFile() {
-        try (BufferedReader reader = new BufferedReader(new FileReader("eventos.txt"))) {
+        File eventosFile = new File(EVENTOS_FILE);
+        if (!eventosFile.exists()) {
+            return;
+        }
+
+        try (BufferedReader reader = new BufferedReader(new FileReader(eventosFile))) {
             String line;
+            eventos.clear();
+            
             while ((line = reader.readLine()) != null) {
                 String[] eventDetails = line.split(",");
-                if (eventDetails.length == 6) {
-                    Evento evento = new Evento(eventDetails[0], eventDetails[1], eventDetails[2], 
-                                             eventDetails[3], eventDetails[4], eventDetails[5]);
+                if (eventDetails.length >= 5) {
+                    Evento evento = new Evento(
+                        eventDetails[0].trim(),
+                        eventDetails[1].trim(),
+                        eventDetails[2].trim(),
+                        eventDetails[3].trim(),
+                        eventDetails[4].trim(),
+                        eventDetails.length > 5 ? eventDetails[5].trim() : ""
+                    );
                     eventos.add(evento);
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            System.err.println("Erro ao ler arquivo: " + e.getMessage());
         }
     }
 
@@ -662,32 +1220,36 @@ public class SyncCesar {
         boolean temPendencias = false;
 
         for (Evento evento : eventos) {
-            try {
-                Calendar dataEvento = Calendar.getInstance();
-                String[] dataParts = evento.getData().split("/");
-                dataEvento.set(
-                    Integer.parseInt(dataParts[2]), // ano
-                    Integer.parseInt(dataParts[1]) - 1, // mês (0-11)
-                    Integer.parseInt(dataParts[0]) // dia
-                );
-                dataEvento.set(Calendar.HOUR_OF_DAY, 0);
-                dataEvento.set(Calendar.MINUTE, 0);
-                dataEvento.set(Calendar.SECOND, 0);
-                dataEvento.set(Calendar.MILLISECOND, 0);
+            // Verifica se o status é pendente
+            if ("pendente".equalsIgnoreCase(evento.getStatus())) {
+                try {
+                    Calendar dataEvento = Calendar.getInstance();
+                    String[] dataParts = evento.getData().split("/");
+                    dataEvento.set(
+                        Integer.parseInt(dataParts[2]), // ano
+                        Integer.parseInt(dataParts[1]) - 1, // mês (0-11)
+                        Integer.parseInt(dataParts[0]) // dia
+                    );
+                    dataEvento.set(Calendar.HOUR_OF_DAY, 0);
+                    dataEvento.set(Calendar.MINUTE, 0);
+                    dataEvento.set(Calendar.SECOND, 0);
+                    dataEvento.set(Calendar.MILLISECOND, 0);
 
-                if (dataEvento.before(hoje)) {
-                    temPendencias = true;
-                    pendenciasText.append("Título: ").append(evento.getTitulo()).append("\n")
-                                .append("Data e Hora: ").append(evento.getData()).append(" ")
-                                .append(evento.getHora()).append("\n")
-                                .append("Tipo: ").append(evento.getTipo()).append("\n")
-                                .append("Status: ").append(evento.getStatus()).append("\n")
-                                .append("Descrição: ").append(evento.getDescricao()).append("\n")
-                                .append("----------------------------------------\n");
+                    // Verifica se a data é anterior à atual
+                    if (dataEvento.before(hoje)) {
+                        temPendencias = true;
+                        pendenciasText.append("Título: ").append(evento.getTitulo()).append("\n")
+                                    .append("Data e Hora: ").append(evento.getData()).append(" ")
+                                    .append(evento.getHora()).append("\n")
+                                    .append("Tipo: ").append(evento.getTipo()).append("\n")
+                                    .append("Status: ").append(evento.getStatus()).append("\n")
+                                    .append("Descrição: ").append(evento.getDescricao()).append("\n")
+                                    .append("----------------------------------------\n");
+                    }
+                } catch (Exception e) {
+                    System.err.println("Erro ao processar data do evento: " + evento.getTitulo());
+                    e.printStackTrace();
                 }
-            } catch (Exception e) {
-                System.err.println("Erro ao processar data do evento: " + evento.getTitulo());
-                e.printStackTrace();
             }
         }
 
