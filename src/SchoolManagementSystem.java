@@ -266,13 +266,14 @@ public class SchoolManagementSystem {
 
     private void showAddEventDialog(JPanel calendarPanel) {
         JDialog dialog = new JDialog(frame, "Adicionar Evento", true);
-        dialog.setSize(300, 400);
-        dialog.setLayout(new GridLayout(6, 2, 10, 10));
+        dialog.setSize(300, 450);
+        dialog.setLayout(new GridLayout(7, 2, 10, 10));
 
         JTextField titleField = new JTextField();
         JTextField dateField = new JTextField("dd/MM/yyyy");
         JTextField timeField = new JTextField("HH:mm");
         JTextField typeField = new JTextField("Reunião/Lembrete");
+        JTextField statusField = new JTextField("pendente");
         JTextArea descriptionField = new JTextArea(3, 20);
 
         dialog.add(new JLabel("Título:"));
@@ -283,6 +284,8 @@ public class SchoolManagementSystem {
         dialog.add(timeField);
         dialog.add(new JLabel("Tipo:"));
         dialog.add(typeField);
+        dialog.add(new JLabel("Status:"));
+        dialog.add(statusField);
         dialog.add(new JLabel("Descrição:"));
         dialog.add(new JScrollPane(descriptionField));
 
@@ -292,9 +295,26 @@ public class SchoolManagementSystem {
             String date = dateField.getText();
             String time = timeField.getText();
             String type = typeField.getText();
+            String status = statusField.getText();
             String description = descriptionField.getText();
 
-            Evento evento = new Evento(title, date, time, type, description);
+            if (!isValidDate(date)) {
+                JOptionPane.showMessageDialog(dialog,
+                    "Data inválida! Use o formato dd/MM/yyyy",
+                    "Erro",
+                    JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            if (!isValidTime(time)) {
+                JOptionPane.showMessageDialog(dialog,
+                    "Hora inválida! Use o formato HH:mm",
+                    "Erro",
+                    JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            Evento evento = new Evento(title, date, time, type, status, description);
             eventos.add(evento);
 
             saveEventToFile(evento);
@@ -307,12 +327,54 @@ public class SchoolManagementSystem {
         dialog.setVisible(true);
     }
 
+    private boolean isValidDate(String date) {
+        if (date == null || !date.matches("\\d{2}/\\d{2}/\\d{4}")) {
+            return false;
+        }
+        try {
+            String[] parts = date.split("/");
+            int day = Integer.parseInt(parts[0]);
+            int month = Integer.parseInt(parts[1]);
+            int year = Integer.parseInt(parts[2]);
+
+            if (year < 1900 || year > 2100) return false;
+            if (month < 1 || month > 12) return false;
+            if (day < 1) return false;
+
+            int[] daysInMonth = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+            
+            if (year % 4 == 0 && (year % 100 != 0 || year % 400 == 0)) {
+                daysInMonth[1] = 29;
+            }
+
+            return day <= daysInMonth[month - 1];
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    private boolean isValidTime(String time) {
+        if (time == null || !time.matches("\\d{2}:\\d{2}")) {
+            return false;
+        }
+        try {
+            String[] parts = time.split(":");
+            int hours = Integer.parseInt(parts[0]);
+            int minutes = Integer.parseInt(parts[1]);
+
+            return hours >= 0 && hours < 24 && minutes >= 0 && minutes < 60;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
     private void updateMonthView(JTextArea monthView) {
         StringBuilder eventsText = new StringBuilder("Eventos do Mês:\n");
         for (Evento evento : eventos) {
             eventsText.append("Título: ").append(evento.getTitulo()).append("\n")
                       .append("Data e Hora: ").append(evento.getData()).append(" ").append(evento.getHora()).append("\n")
                       .append("Tipo: ").append(evento.getTipo()).append("\n")
+                      .append("Status: ").append(evento.getStatus()).append("\n")
                       .append("Descrição: ").append(evento.getDescricao()).append("\n\n");
         }
         monthView.setText(eventsText.toString());
@@ -320,7 +382,8 @@ public class SchoolManagementSystem {
 
     private void saveEventToFile(Evento evento) {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter("eventos.txt", true))) {
-            writer.write(evento.getTitulo() + "," + evento.getData() + "," + evento.getHora() + "," + evento.getTipo() + "," + evento.getDescricao());
+            writer.write(evento.getTitulo() + "," + evento.getData() + "," + evento.getHora() + "," + 
+                        evento.getTipo() + "," + evento.getStatus() + "," + evento.getDescricao());
             writer.newLine();
         } catch (IOException e) {
             e.printStackTrace();
@@ -332,8 +395,9 @@ public class SchoolManagementSystem {
             String line;
             while ((line = reader.readLine()) != null) {
                 String[] eventDetails = line.split(",");
-                if (eventDetails.length == 5) {
-                    Evento evento = new Evento(eventDetails[0], eventDetails[1], eventDetails[2], eventDetails[3], eventDetails[4]);
+                if (eventDetails.length == 6) {
+                    Evento evento = new Evento(eventDetails[0], eventDetails[1], eventDetails[2], 
+                                             eventDetails[3], eventDetails[4], eventDetails[5]);
                     eventos.add(evento);
                 }
             }
@@ -382,13 +446,15 @@ class Evento {
     private String data;
     private String hora;
     private String tipo;
+    private String status;
     private String descricao;
 
-    public Evento(String titulo, String data, String hora, String tipo, String descricao) {
+    public Evento(String titulo, String data, String hora, String tipo, String status, String descricao) {
         this.titulo = titulo;
         this.data = data;
         this.hora = hora;
         this.tipo = tipo;
+        this.status = status;
         this.descricao = descricao;
     }
 
@@ -406,6 +472,10 @@ class Evento {
 
     public String getTipo() {
         return tipo;
+    }
+
+    public String getStatus() {
+        return status;
     }
 
     public String getDescricao() {
