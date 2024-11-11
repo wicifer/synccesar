@@ -12,7 +12,7 @@ public class SyncCesar {
     private final Color PURPLE_PRIMARY = new Color(102, 51, 153);
     private final Color PURPLE_LIGHT = new Color(147, 112, 219);
     private final Color PURPLE_DARK = new Color(75, 0, 130);
-    private final Color PURPLE_BACKGROUND = new Color(245, 240, 255);
+    private final Color PURPLE_BACKGROUND = new Color(147, 112, 219);
 
     public SyncCesar() {
         frame = new JFrame("SyncCesar");
@@ -24,57 +24,62 @@ public class SyncCesar {
 
         loadEventsFromFile();
 
-        createRegistrationPanel();
+        createLoginPanel();
 
         frame.setVisible(true);
     }
 
     private void createRegistrationPanel() {
         JPanel registrationPanel = new JPanel(new GridBagLayout());
+        registrationPanel.setBackground(PURPLE_BACKGROUND);
+    
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(10, 10, 10, 10);
-
+    
         ImageIcon logoIcon = new ImageIcon("resources/logoprojeto.png.png");
         Image logoImage = logoIcon.getImage().getScaledInstance(200, 200, Image.SCALE_SMOOTH);
         JLabel logoLabel = new JLabel(new ImageIcon(logoImage));
-
+    
         gbc.gridx = 0;
         gbc.gridy = 0;
         gbc.gridwidth = 2;
         gbc.anchor = GridBagConstraints.CENTER;
         registrationPanel.add(logoLabel, gbc);
-
+    
         JLabel emailLabel = new JLabel("Email:");
+        emailLabel.setForeground(Color.BLACK);
         gbc.gridx = 0;
         gbc.gridy = 1;
         gbc.gridwidth = 1;
         registrationPanel.add(emailLabel, gbc);
-
+    
         JTextField emailField = new JTextField(20);
         gbc.gridx = 1;
         gbc.gridy = 1;
         registrationPanel.add(emailField, gbc);
-
+    
         JLabel passwordLabel = new JLabel("Senha:");
+        passwordLabel.setForeground(Color.BLACK);
         gbc.gridx = 0;
         gbc.gridy = 2;
         registrationPanel.add(passwordLabel, gbc);
-
+    
         JPasswordField passwordField = new JPasswordField(20);
         gbc.gridx = 1;
         gbc.gridy = 2;
         registrationPanel.add(passwordField, gbc);
-
+    
         JLabel hintLabel = new JLabel("Dica de Segurança:");
+        hintLabel.setForeground(Color.BLACK);
         gbc.gridx = 0;
         gbc.gridy = 3;
         registrationPanel.add(hintLabel, gbc);
-
+    
         JTextField hintField = new JTextField(20);
         gbc.gridx = 1;
         gbc.gridy = 3;
         registrationPanel.add(hintField, gbc);
-
+    
         JButton registerButton = new JButton("Cadastrar");
         gbc.gridx = 0;
         gbc.gridy = 4;
@@ -85,22 +90,26 @@ public class SyncCesar {
         JButton loginOptionButton = new JButton("Já tem uma conta? Entrar");
         loginOptionButton.setBorderPainted(false);
         loginOptionButton.setContentAreaFilled(false);
-        loginOptionButton.setForeground(Color.BLUE);
+        loginOptionButton.setForeground(PURPLE_DARK);
         loginOptionButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
         gbc.gridy = 5;
         registrationPanel.add(loginOptionButton, gbc);
-
+    
         registerButton.addActionListener(e -> {
             String email = emailField.getText();
             String password = new String(passwordField.getPassword());
             String hint = hintField.getText();
-
+    
             if (email.isEmpty() || password.isEmpty() || hint.isEmpty()) {
                 JOptionPane.showMessageDialog(frame, "Por favor, preencha todos os campos.", "Erro", JOptionPane.ERROR_MESSAGE);
             } else {
                 saveUserToFile(email, password, hint);
                 JOptionPane.showMessageDialog(frame, "Usuário cadastrado com sucesso!");
-                createMainPanel();
+    
+                frame.getContentPane().removeAll();
+                createLoginPanel();
+                frame.revalidate();
+                frame.repaint();
             }
         });
 
@@ -110,53 +119,51 @@ public class SyncCesar {
             frame.revalidate();
             frame.repaint();
         });
-
+    
         frame.getContentPane().removeAll();
         frame.add(registrationPanel);
+        frame.getContentPane().setBackground(PURPLE_BACKGROUND);
         frame.revalidate();
         frame.repaint();
     }
-
-    private void saveUserToFile(String email, String password, String hint) {
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter("usuarios.txt", true))) {
-            writer.write(email + "," + password + "," + hint);
-            writer.newLine();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
+    
+    
 
     private void createLoginPanel() {
         JPanel loginPanel = new JPanel(new GridBagLayout());
+        loginPanel.setBackground(PURPLE_BACKGROUND);
+    
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(10, 10, 10, 10);
-
+    
         ImageIcon logoIcon = new ImageIcon("resources/logoprojeto.png.png");
         Image logoImage = logoIcon.getImage().getScaledInstance(200, 200, Image.SCALE_SMOOTH);
         JLabel logoLabel = new JLabel(new ImageIcon(logoImage));
-
+    
         gbc.gridx = 0;
         gbc.gridy = 0;
         gbc.gridwidth = 2;
         gbc.anchor = GridBagConstraints.CENTER;
         loginPanel.add(logoLabel, gbc);
-
+    
         JLabel emailLabel = new JLabel("Email:");
+        emailLabel.setForeground(Color.BLACK);
         gbc.gridx = 0;
         gbc.gridy = 1;
         gbc.gridwidth = 1;
         loginPanel.add(emailLabel, gbc);
-
+    
         JTextField emailField = new JTextField(20);
         gbc.gridx = 1;
         gbc.gridy = 1;
         loginPanel.add(emailField, gbc);
 
         JLabel passwordLabel = new JLabel("Senha:");
+        passwordLabel.setForeground(Color.BLACK);
         gbc.gridx = 0;
         gbc.gridy = 2;
         loginPanel.add(passwordLabel, gbc);
-
+    
         JPasswordField passwordField = new JPasswordField(20);
         gbc.gridx = 1;
         gbc.gridy = 2;
@@ -168,41 +175,63 @@ public class SyncCesar {
         gbc.gridwidth = 2;
         gbc.anchor = GridBagConstraints.CENTER;
         loginPanel.add(loginButton, gbc);
-
+    
         JButton forgotPasswordButton = new JButton("Esqueceu a senha?");
+        forgotPasswordButton.setBorderPainted(false);
+        forgotPasswordButton.setContentAreaFilled(false);
+        forgotPasswordButton.setForeground(PURPLE_DARK);
+        forgotPasswordButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
         gbc.gridy = 4;
         loginPanel.add(forgotPasswordButton, gbc);
-
+    
+        JButton registerOptionButton = new JButton("Criar uma conta");
+        registerOptionButton.setBorderPainted(false);
+        registerOptionButton.setContentAreaFilled(false);
+        registerOptionButton.setForeground(PURPLE_DARK);
+        registerOptionButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        gbc.gridy = 5;
+        loginPanel.add(registerOptionButton, gbc);
+    
         loginButton.addActionListener(e -> {
             String email = emailField.getText();
             String password = new String(passwordField.getPassword());
-
+    
             if (authenticateUser(email, password)) {
                 JOptionPane.showMessageDialog(frame, "Login bem-sucedido! Bem-vindo(a), " + email);
+    
+                frame.getContentPane().removeAll();
                 createMainPanel();
+                frame.revalidate();
+                frame.repaint();
             } else {
                 JOptionPane.showMessageDialog(frame, "Email ou senha incorretos. Tente novamente.", "Erro de Login", JOptionPane.ERROR_MESSAGE);
             }
-
-            emailField.setText("");
-            passwordField.setText("");
         });
-
-        forgotPasswordButton.addActionListener(e -> {
-            String email = emailField.getText();
-            String hint = getHintForUser(email);
-            if (hint != null) {
-                JOptionPane.showMessageDialog(frame, "Dica de Segurança: " + hint, "Esqueceu a Senha?", JOptionPane.INFORMATION_MESSAGE);
-            } else {
-                JOptionPane.showMessageDialog(frame, "Email não encontrado. Verifique o email e tente novamente.", "Erro", JOptionPane.ERROR_MESSAGE);
-            }
+    
+        registerOptionButton.addActionListener(e -> {
+            frame.getContentPane().removeAll();
+            createRegistrationPanel();
+            frame.revalidate();
+            frame.repaint();
         });
-
+    
         frame.getContentPane().removeAll();
         frame.add(loginPanel);
+        frame.getContentPane().setBackground(PURPLE_BACKGROUND);
         frame.revalidate();
         frame.repaint();
     }
+    
+
+    private void saveUserToFile(String email, String password, String hint) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter("usuarios.txt", true))) {
+            writer.write(email + "," + password + "," + hint);
+            writer.newLine();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    
 
     private boolean authenticateUser(String email, String password) {
         try (BufferedReader reader = new BufferedReader(new FileReader("usuarios.txt"))) {
@@ -339,13 +368,12 @@ public class SyncCesar {
             BorderFactory.createEmptyBorder(10, 10, 10, 10)
         ));
 
-        // Título da seção
+        
         JLabel titleLabel = new JLabel(title);
         titleLabel.setFont(new Font("Arial", Font.BOLD, 16));
         titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         titleLabel.setForeground(PURPLE_DARK);
 
-        // Barra de progresso
         JProgressBar progressBar = new JProgressBar(0, 100);
         progressBar.setValue(percentage);
         progressBar.setStringPainted(true);
@@ -356,7 +384,7 @@ public class SyncCesar {
         progressBar.setMaximumSize(new Dimension(150, 20));
         progressBar.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        // Adicionar componentes ao painel
+
         sectionPanel.add(titleLabel);
         sectionPanel.add(Box.createRigidArea(new Dimension(0, 10)));
         sectionPanel.add(progressBar);
