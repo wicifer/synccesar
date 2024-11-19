@@ -1,13 +1,20 @@
-import java.awt.*;
+import java.awt.*; 
 import java.io.*;
 import java.util.*;
+import java.util.List;
 import javax.swing.*;
 
 public class SyncCesar {
     private JFrame frame;
     private JTabbedPane tabbedPane;
-    private ArrayList<Task> tasks;
-    private ArrayList<Evento> eventos;
+    private JPanel calendarPanel;
+    private JLabel monthLabel;
+    private Calendar currentMonth;
+    private Map<String, List<String>> events;
+    private List<Task> tasks;
+    private List<Evento> eventos;
+    private List<Nota> notas = new ArrayList<>();
+    private JPanel dayHeaders;
 
     private final Color PURPLE_PRIMARY = new Color(102, 51, 153);
     private final Color PURPLE_LIGHT = new Color(147, 112, 219);
@@ -274,22 +281,22 @@ public class SyncCesar {
         sideMenu.setPreferredSize(new Dimension(150, frame.getHeight()));
         sideMenu.setBorder(BorderFactory.createEtchedBorder());
         sideMenu.setBackground(PURPLE_PRIMARY);
-
+    
         String[] menuItems = {"Dashboard", "Calendário", "Pendências", "Notificações"};
         CardLayout cardLayout = new CardLayout();
         JPanel contentPanel = new JPanel(cardLayout);
         contentPanel.setBackground(PURPLE_BACKGROUND);
-
+    
         JPanel dashboardPanel = createDashboardContent();
-        JPanel calendarPanel = createCalendarContent();
+        JPanel calendarPanel = createCalendarContentWithHours();
         JPanel pendenciasPanel = createPendenciasContent();
         JPanel notificationsPanel = createNotificationsContent();
-
+    
         contentPanel.add(dashboardPanel, "Dashboard");
         contentPanel.add(calendarPanel, "Calendário");
         contentPanel.add(pendenciasPanel, "Pendências");
         contentPanel.add(notificationsPanel, "Notificações");
-
+    
         for (String menuItem : menuItems) {
             JButton menuButton = new JButton(menuItem);
             menuButton.setMaximumSize(new Dimension(150, 40));
@@ -306,7 +313,7 @@ public class SyncCesar {
                 public void mouseEntered(java.awt.event.MouseEvent evt) {
                     menuButton.setBackground(PURPLE_LIGHT);
                 }
-
+    
                 public void mouseExited(java.awt.event.MouseEvent evt) {
                     menuButton.setBackground(PURPLE_PRIMARY);
                 }
@@ -315,10 +322,10 @@ public class SyncCesar {
             sideMenu.add(menuButton);
             sideMenu.add(Box.createRigidArea(new Dimension(0, 5)));
         }
-
+    
         mainPanel.add(sideMenu, BorderLayout.WEST);
         mainPanel.add(contentPanel, BorderLayout.CENTER);
-
+    
         frame.add(mainPanel);
         frame.revalidate();
         frame.repaint();
@@ -327,35 +334,338 @@ public class SyncCesar {
     private JPanel createDashboardContent() {
         JPanel panel = new JPanel(new BorderLayout());
         panel.setBackground(PURPLE_BACKGROUND);
-
-        // Painel para o título
+    
         JPanel titlePanel = new JPanel();
         titlePanel.setBackground(PURPLE_BACKGROUND);
-        JLabel titleLabel = new JLabel("Dashboard", SwingConstants.CENTER);
-        titleLabel.setFont(new Font("Arial", Font.BOLD, 24));
+        JLabel titleLabel = new JLabel("Visão geral de cada processo", SwingConstants.CENTER);
+        titleLabel.setFont(new Font("Arial", Font.BOLD, 20));
         titleLabel.setForeground(PURPLE_DARK);
         titlePanel.add(titleLabel);
         panel.add(titlePanel, BorderLayout.NORTH);
+    
+        JPanel mainContentPanel = new JPanel(new GridLayout(2, 1, 10, 10));
+        mainContentPanel.setBackground(PURPLE_BACKGROUND);
+    
+        JPanel progressPanel = new JPanel(new GridLayout(1, 3, 10, 10));
+        progressPanel.setBackground(PURPLE_BACKGROUND);
+    
+        progressPanel.add(createCircularTaskCard(
+            "Lançamento de Notas",
+            50,
+            Color.ORANGE,
+            Arrays.asList(
+                "01 - Turma B - Noite !",
+                "02 - Subir notas de Gestão B ✓",
+                "03 - Revisar eventuais erros",
+                "04 - Garantir entrega até o prazo"
+            )
+        ));
+    
+        progressPanel.add(createCircularTaskCard(
+            "Pagamentos",
+            90,
+            Color.GREEN,
+            Arrays.asList(
+                "01 - Atualizar lista de pagamentos",
+                "02 - Confirmar transferências!",
+                "03 - Revisar relatórios financeiros"
+            )
+        ));
+    
+        progressPanel.add(createCircularTaskCard(
+            "Reuniões Mensais ✓",
+            100,
+            Color.CYAN,
+            Arrays.asList(
+                "01 - Alinhamento Semestre✓",
+                "02 - Reunião Coordenação ✓"
+            )
+        ));
+    
+        mainContentPanel.add(progressPanel);
 
-        // Painel para as quatro seções
-        JPanel gridPanel = new JPanel(new GridLayout(2, 2, 20, 20));
-        gridPanel.setBackground(PURPLE_BACKGROUND);
-        gridPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        JPanel taskSectionsPanel = new JPanel(new GridLayout(1, 3, 10, 10));
+        taskSectionsPanel.setBackground(PURPLE_BACKGROUND);
+    
+        taskSectionsPanel.add(createTaskSection("A Fazer", PURPLE_LIGHT));
+        taskSectionsPanel.add(createTaskSection("Em Progresso", Color.ORANGE));
+        taskSectionsPanel.add(createTaskSection("Concluído", Color.GREEN));
+    
+        mainContentPanel.add(taskSectionsPanel);
+        panel.add(mainContentPanel, BorderLayout.CENTER);
+    
+        JPanel notificationsPanel = buildNotificationPanel();
+        panel.add(notificationsPanel, BorderLayout.SOUTH);
+    
+        return panel;
+    }
 
-        // Criar as quatro seções
-        String[][] sections = {
-            {"Provas", "60"},
-            {"Pagamentos", "45"},
-            {"Aulas", "75"},
-            {"Atividade 4", "100"}
+    private JPanel createTaskSection(String title, Color backgroundColor) {
+
+        JPanel taskPanel = new JPanel(new BorderLayout());
+        taskPanel.setBackground(backgroundColor);
+        taskPanel.setBorder(BorderFactory.createLineBorder(PURPLE_DARK, 1));
+        taskPanel.setPreferredSize(new Dimension(120, 80));
+
+        JLabel titleLabel = new JLabel(title, SwingConstants.CENTER);
+        titleLabel.setFont(new Font("Arial", Font.BOLD, 12));
+        titleLabel.setForeground(Color.BLACK);
+        taskPanel.add(titleLabel, BorderLayout.NORTH);
+
+        JTextArea taskArea = new JTextArea();
+        taskArea.setLineWrap(true);
+        taskArea.setWrapStyleWord(true);
+        taskArea.setFont(new Font("Arial", Font.PLAIN, 10));
+        taskArea.setBorder(BorderFactory.createLineBorder(Color.GRAY));
+        taskArea.setPreferredSize(new Dimension(100, 40));
+
+        JScrollPane scrollPane = new JScrollPane(taskArea);
+        scrollPane.setPreferredSize(new Dimension(100, 40));
+        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+        taskPanel.add(scrollPane, BorderLayout.CENTER);
+
+        JButton addButton = new JButton("+ Add atividade");
+        addButton.setFocusPainted(false);
+        addButton.setBackground(PURPLE_PRIMARY);
+        addButton.setForeground(Color.WHITE);
+        addButton.setFont(new Font("Arial", Font.PLAIN, 10));
+        addButton.setPreferredSize(new Dimension(100, 20));
+        addButton.addActionListener(e -> {
+            String newTask = JOptionPane.showInputDialog("Digite uma nova tarefa:");
+            if (newTask != null && !newTask.trim().isEmpty()) {
+                taskArea.append(newTask + "\n");
+            }
+        });
+        taskPanel.add(addButton, BorderLayout.SOUTH);
+    
+        return taskPanel;
+    }
+
+    private JPanel createGraphPanel(String title, String subtitle, int percentage, Color progressColor) {
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setBackground(Color.WHITE);
+        panel.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(200, 200, 200)),
+                BorderFactory.createEmptyBorder(10, 10, 10, 10)
+        ));
+    
+        JLabel titleLabel = new JLabel(title, SwingConstants.CENTER);
+        titleLabel.setFont(new Font("Arial", Font.BOLD, 16));
+        titleLabel.setForeground(new Color(75, 0, 130));
+        panel.add(titleLabel, BorderLayout.NORTH);
+    
+        JProgressBar progressBar = new JProgressBar(0, 100);
+        progressBar.setValue(percentage);
+        progressBar.setStringPainted(true);
+        progressBar.setString(percentage + "%");
+        progressBar.setForeground(progressColor);
+        progressBar.setPreferredSize(new Dimension(150, 20));
+    
+        panel.add(progressBar, BorderLayout.CENTER);
+    
+        JLabel subtitleLabel = new JLabel(subtitle, SwingConstants.CENTER);
+        subtitleLabel.setFont(new Font("Arial", Font.ITALIC, 12));
+        subtitleLabel.setForeground(Color.GRAY);
+        panel.add(subtitleLabel, BorderLayout.SOUTH);
+    
+        return panel;
+    }
+
+    private JPanel createTaskListPanel(String title, Color backgroundColor) {
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setBackground(backgroundColor);
+        panel.setBorder(BorderFactory.createLineBorder(new Color(200, 200, 200), 1));
+    
+        JLabel titleLabel = new JLabel(title, SwingConstants.CENTER);
+        titleLabel.setFont(new Font("Arial", Font.BOLD, 16));
+        titleLabel.setForeground(Color.BLACK);
+        panel.add(titleLabel, BorderLayout.NORTH);
+    
+        JPanel taskList = new JPanel();
+        taskList.setLayout(new BoxLayout(taskList, BoxLayout.Y_AXIS));
+        taskList.setBackground(backgroundColor);
+    
+        JButton addTaskButton = new JButton("+ Add atividade");
+        addTaskButton.setFocusPainted(false);
+        addTaskButton.setBackground(new Color(200, 200, 255));
+        addTaskButton.addActionListener(e -> {
+            String newTask = JOptionPane.showInputDialog("Digite uma nova tarefa:");
+            if (newTask != null && !newTask.trim().isEmpty()) {
+                JLabel taskLabel = new JLabel(newTask);
+                taskLabel.setFont(new Font("Arial", Font.PLAIN, 14));
+                taskList.add(taskLabel);
+                taskList.revalidate();
+                taskList.repaint();
+            }
+        });
+    
+        panel.add(taskList, BorderLayout.CENTER);
+        panel.add(addTaskButton, BorderLayout.SOUTH);
+    
+        return panel;
+    }
+
+    private JPanel createCircularTaskCard(String title, int percentage, Color progressColor, List<String> tasks) {
+        JPanel circularTaskPanel = new JPanel();
+        circularTaskPanel.setLayout(new BoxLayout(circularTaskPanel, BoxLayout.Y_AXIS));
+        circularTaskPanel.setBackground(new Color(240, 240, 255));
+        circularTaskPanel.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(PURPLE_LIGHT, 2),
+            BorderFactory.createEmptyBorder(15, 15, 15, 15)
+        ));
+    
+        JLabel titleLabel = new JLabel(title + " ▼");
+        titleLabel.setFont(new Font("Arial", Font.BOLD, 14));
+        titleLabel.setForeground(PURPLE_DARK);
+        titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+    
+        JPanel circularProgressPanel = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                Graphics2D g2d = (Graphics2D) g;
+                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+    
+                int diameter = Math.min(getWidth(), getHeight()) - 10;
+                int x = (getWidth() - diameter) / 2;
+                int y = (getHeight() - diameter) / 2;
+    
+                g2d.setColor(new Color(220, 220, 220));
+                g2d.fillArc(x, y, diameter, diameter, 0, 360);
+    
+                g2d.setColor(progressColor);
+                g2d.fillArc(x, y, diameter, diameter, 90, -(int) (3.6 * percentage));
+    
+                g2d.setColor(new Color(240, 240, 255));
+                g2d.fillOval(x + 10, y + 10, diameter - 20, diameter - 20);
+    
+                g2d.setColor(PURPLE_DARK);
+                g2d.setFont(new Font("Arial", Font.BOLD, 14));
+                String text = percentage + "%";
+                FontMetrics fm = g2d.getFontMetrics();
+                int textX = getWidth() / 2 - fm.stringWidth(text) / 2;
+                int textY = getHeight() / 2 + fm.getAscent() / 2;
+                g2d.drawString(text, textX, textY);
+            }
         };
+        circularProgressPanel.setPreferredSize(new Dimension(100, 100));
+        circularProgressPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
+    
+        circularTaskPanel.add(titleLabel);
+        circularTaskPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+        circularTaskPanel.add(circularProgressPanel);
+    
+        titleLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        titleLabel.addMouseListener(new java.awt.event.MouseAdapter() {
+            private boolean isExpanded = false;
+    
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent e) {
+                if (!isExpanded) {
+                    
+                    JPanel tasksPanel = new JPanel();
+                    tasksPanel.setLayout(new BoxLayout(tasksPanel, BoxLayout.Y_AXIS));
+                    tasksPanel.setBackground(new Color(250, 250, 255));
+                    tasksPanel.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
+    
+                    for (String task : tasks) {
+                        JLabel taskLabel = new JLabel(task);
+    
+                        
+                        if (task.contains("✓")) {
+                            taskLabel.setForeground(Color.GREEN);
+                        } else if (task.contains("!")) {
+                            taskLabel.setForeground(Color.ORANGE);
+                        } else {
+                            taskLabel.setForeground(Color.RED);
+                        }
+    
+                        taskLabel.setFont(new Font("Arial", Font.PLAIN, 12));
+                        tasksPanel.add(taskLabel);
+                    }
 
-        for (String[] section : sections) {
-            JPanel sectionPanel = createSectionPanel(section[0], Integer.parseInt(section[1]));
-            gridPanel.add(sectionPanel);
-        }
+                    JScrollPane scrollPane = new JScrollPane(tasksPanel);
+                    scrollPane.setPreferredSize(new Dimension(180, 100));
+                    scrollPane.setBorder(BorderFactory.createLineBorder(PURPLE_LIGHT));
+    
+                    circularTaskPanel.add(scrollPane);
+                    circularTaskPanel.revalidate();
+                    circularTaskPanel.repaint();
+                    titleLabel.setText(title + " ▲");
+                } else {
+                    circularTaskPanel.remove(3);
+                    circularTaskPanel.revalidate();
+                    circularTaskPanel.repaint();
+                    titleLabel.setText(title + " ▼");
+                }
+                isExpanded = !isExpanded;
+            }
+        });
+    
+        return circularTaskPanel;
+    }
+    
+    
 
-        panel.add(gridPanel, BorderLayout.CENTER);
+    private JPanel createNotificationCard(String title, String message) {
+        JPanel notificationCard = new JPanel(new BorderLayout());
+        notificationCard.setBackground(new Color(240, 248, 255));
+        notificationCard.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(Color.LIGHT_GRAY, 1),
+                BorderFactory.createEmptyBorder(10, 10, 10, 10)
+        ));
+
+        JLabel titleLabel = new JLabel(title);
+        titleLabel.setFont(new Font("Arial", Font.BOLD, 12));
+        titleLabel.setForeground(Color.BLACK);
+
+        JTextArea messageLabel = new JTextArea(message);
+        messageLabel.setFont(new Font("Arial", Font.PLAIN, 12));
+        messageLabel.setForeground(Color.DARK_GRAY);
+        messageLabel.setWrapStyleWord(true);
+        messageLabel.setLineWrap(true);
+        messageLabel.setOpaque(false);
+        messageLabel.setEditable(false);
+        messageLabel.setFocusable(false);
+    
+        notificationCard.add(titleLabel, BorderLayout.NORTH);
+        notificationCard.add(messageLabel, BorderLayout.CENTER);
+    
+        return notificationCard;
+    }
+
+    private JPanel buildNotificationPanel() {
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setBackground(PURPLE_BACKGROUND);
+
+        JLabel titleLabel = new JLabel("Notificações para essa semana", SwingConstants.CENTER);
+        titleLabel.setFont(new Font("Arial", Font.BOLD, 16));
+        titleLabel.setForeground(PURPLE_DARK);
+        panel.add(titleLabel, BorderLayout.NORTH);
+
+        JPanel notificationList = new JPanel();
+        notificationList.setLayout(new BoxLayout(notificationList, BoxLayout.Y_AXIS));
+        notificationList.setBackground(PURPLE_BACKGROUND);
+
+        notificationList.add(createNotificationCard(
+                "Lembrete de prazo",
+                "Faltam 3 dias para o término do prazo da etapa de revisão do projeto."
+        ));
+        notificationList.add(createNotificationCard(
+                "Aviso de Conclusão de Etapa",
+                "A etapa 'Planejamento' foi concluída. A próxima etapa inicia em 01/11."
+        ));
+        notificationList.add(createNotificationCard(
+                "Atualização no sistema",
+                "O sistema estará indisponível para manutenção no próximo final de semana."
+        ));
+
+        JScrollPane scrollPane = new JScrollPane(notificationList);
+        scrollPane.setBorder(BorderFactory.createEmptyBorder());
+        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+        scrollPane.setPreferredSize(new Dimension(300, 150));
+        panel.add(scrollPane, BorderLayout.CENTER);
+    
         return panel;
     }
 
@@ -392,23 +702,416 @@ public class SyncCesar {
         return sectionPanel;
     }
 
-    private JPanel createCalendarContent() {
+    private JPanel createWeekDaysHeader() {
+        JPanel weekDaysPanel = new JPanel(new GridLayout(1, 7));
+        weekDaysPanel.setBackground(PURPLE_PRIMARY);
+    
+        String[] daysOfWeek = {"Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"};
+        for (String day : daysOfWeek) {
+            JLabel dayLabel = new JLabel(day, SwingConstants.CENTER);
+            dayLabel.setForeground(Color.WHITE); // Cor do texto
+            dayLabel.setFont(new Font("Arial", Font.BOLD, 14));
+            weekDaysPanel.add(dayLabel);
+        }
+    
+        return weekDaysPanel;
+    }
+
+    private JPanel createCalendarContentWithHours() {
         JPanel panel = new JPanel(new BorderLayout());
-        
+
+        JPanel headerPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        JButton prevMonthButton = new JButton("<");
+        JButton nextMonthButton = new JButton(">");
+        monthLabel = new JLabel("", SwingConstants.CENTER);
+        currentMonth = Calendar.getInstance();
+        updateMonthLabel();
+    
+        prevMonthButton.addActionListener(e -> {
+            changeMonth(-1);
+            updateCalendarGrid();
+        });
+    
+        nextMonthButton.addActionListener(e -> {
+            changeMonth(1);
+            updateCalendarGrid();
+        });
+    
+        headerPanel.add(prevMonthButton);
+        headerPanel.add(monthLabel);
+        headerPanel.add(nextMonthButton);
+    
+        panel.add(headerPanel, BorderLayout.NORTH);
+
+        JPanel calendarGrid = new JPanel(new BorderLayout());
+        JPanel dayHeaders = new JPanel(new GridLayout(1, 8));
+        dayHeaders.setBackground(PURPLE_PRIMARY);
+    
+        JLabel emptyLabel = new JLabel("");
+        dayHeaders.add(emptyLabel);
+    
+        String[] daysOfWeek = {"Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"};
+        for (String day : daysOfWeek) {
+            JLabel label = new JLabel(day, SwingConstants.CENTER);
+            label.setFont(new Font("Arial", Font.BOLD, 14));
+            label.setForeground(Color.WHITE);
+            dayHeaders.add(label);
+        }
+    
+        calendarGrid.add(dayHeaders, BorderLayout.NORTH);
+    
+        JPanel timeAndDays = new JPanel(new GridLayout(24, 8));
+        timeAndDays.setBackground(PURPLE_BACKGROUND);
+    
+        Map<String, Map<String, List<String>>> eventsByMonth = new HashMap<>();
+        String currentMonthKey = getMonthKey(currentMonth);
+    
+        Calendar tempCalendar = (Calendar) currentMonth.clone();
+        tempCalendar.set(Calendar.DAY_OF_MONTH, 1);
+        int firstDayOfWeek = tempCalendar.get(Calendar.DAY_OF_WEEK) - 1;
+        tempCalendar.add(Calendar.DAY_OF_MONTH, -firstDayOfWeek);
+    
+        for (int h = 0; h < 24; h++) {
+            JLabel timeLabel = new JLabel(String.format("%02d:00", h), SwingConstants.CENTER);
+            timeLabel.setFont(new Font("Arial", Font.PLAIN, 12));
+            timeLabel.setForeground(PURPLE_DARK);
+            timeLabel.setBorder(BorderFactory.createMatteBorder(1, 1, 1, 1, PURPLE_PRIMARY));
+            timeAndDays.add(timeLabel);
+    
+            for (int d = 0; d < 7; d++) {
+                JPanel cellPanel = new JPanel(new BorderLayout());
+                cellPanel.setBorder(BorderFactory.createMatteBorder(1, 1, 1, 1, PURPLE_PRIMARY));
+                cellPanel.setBackground(Color.WHITE);
+    
+                JPanel eventPanel = new JPanel();
+                eventPanel.setLayout(new BoxLayout(eventPanel, BoxLayout.Y_AXIS));
+                eventPanel.setBackground(Color.WHITE);
+    
+                final int day = tempCalendar.get(Calendar.DAY_OF_MONTH);
+                final int month = tempCalendar.get(Calendar.MONTH);
+                final int year = tempCalendar.get(Calendar.YEAR);
+                String dateKey = String.format("%02d/%02d/%04d", day, month + 1, year);
+    
+                if (eventsByMonth.containsKey(currentMonthKey) && eventsByMonth.get(currentMonthKey).containsKey(dateKey)) {
+                    List<String> dayEvents = eventsByMonth.get(currentMonthKey).get(dateKey);
+                    for (String event : dayEvents) {
+                        JLabel eventLabel = new JLabel(event);
+                        eventLabel.setFont(new Font("Arial", Font.PLAIN, 10));
+                        eventLabel.setForeground(PURPLE_DARK);
+
+                        eventLabel.addMouseListener(new java.awt.event.MouseAdapter() {
+                            @Override
+                            public void mouseClicked(java.awt.event.MouseEvent e) {
+                                int confirm = JOptionPane.showConfirmDialog(
+                                    frame,
+                                    "Deseja excluir o evento '" + event + "'?",
+                                    "Excluir Evento",
+                                    JOptionPane.YES_NO_OPTION
+                                );
+    
+                                if (confirm == JOptionPane.YES_OPTION) {
+                                    dayEvents.remove(event);
+                                    eventPanel.remove(eventLabel);
+                                    saveEventsToFile();
+                                    eventPanel.revalidate();
+                                    eventPanel.repaint();
+                                    JOptionPane.showMessageDialog(frame, "Evento excluído com sucesso!");
+                                }
+                            }
+                        });
+    
+                        eventPanel.add(eventLabel);
+                    }
+                }
+    
+                cellPanel.add(eventPanel, BorderLayout.CENTER);
+    
+                cellPanel.addMouseListener(new java.awt.event.MouseAdapter() {
+                    public void mouseClicked(java.awt.event.MouseEvent evt) {
+                        String monthKey = getMonthKey(currentMonth);
+                        Map<String, List<String>> currentMonthEvents = eventsByMonth.computeIfAbsent(monthKey, k -> new HashMap<>());
+                        List<String> dayEvents = currentMonthEvents.computeIfAbsent(dateKey, k -> new ArrayList<>());
+    
+                        String event = JOptionPane.showInputDialog(frame, "Adicione um evento para " + dateKey + ":");
+                        if (event != null && !event.isEmpty()) {
+                            dayEvents.add(event);
+    
+                            JLabel eventLabel = new JLabel(event);
+                            eventLabel.setFont(new Font("Arial", Font.PLAIN, 10));
+                            eventLabel.setForeground(PURPLE_DARK);
+
+                            eventLabel.addMouseListener(new java.awt.event.MouseAdapter() {
+                                @Override
+                                public void mouseClicked(java.awt.event.MouseEvent e) {
+                                    int confirm = JOptionPane.showConfirmDialog(
+                                        frame,
+                                        "Deseja excluir o evento '" + event + "'?",
+                                        "Excluir Evento",
+                                        JOptionPane.YES_NO_OPTION
+                                    );
+    
+                                    if (confirm == JOptionPane.YES_OPTION) {
+                                        dayEvents.remove(event);
+                                        eventPanel.remove(eventLabel);
+                                        saveEventsToFile();
+                                        eventPanel.revalidate();
+                                        eventPanel.repaint();
+                                        JOptionPane.showMessageDialog(frame, "Evento excluído com sucesso!");
+                                    }
+                                }
+                            });
+    
+                            eventPanel.add(eventLabel);
+                            eventPanel.revalidate();
+                            eventPanel.repaint();
+                            JOptionPane.showMessageDialog(frame, "Evento adicionado para " + dateKey);
+                        }
+                    }
+                });
+    
+                timeAndDays.add(cellPanel);
+                tempCalendar.add(Calendar.DAY_OF_MONTH, 1);
+            }
+        }
+    
+        calendarGrid.add(timeAndDays, BorderLayout.CENTER);
+        panel.add(calendarGrid, BorderLayout.CENTER);
+
+        JPanel bottomPanel = new JPanel();
+        bottomPanel.setBackground(PURPLE_BACKGROUND);
+    
         JButton addEventButton = new JButton("Adicionar Evento");
-        addEventButton.addActionListener(e -> showAddEventDialog(panel));
-        panel.add(addEventButton, BorderLayout.NORTH);
-
-        JTextArea monthView = new JTextArea();
-        monthView.setEditable(false);
-        JScrollPane scrollPane = new JScrollPane(monthView);
-        panel.add(scrollPane, BorderLayout.CENTER);
-
-        updateMonthView(monthView);
-        
+        addEventButton.addActionListener(e -> showAddEventDialog(timeAndDays));
+        bottomPanel.add(addEventButton);
+    
+        JButton addNoteButton = new JButton("Adicionar Nota");
+        addNoteButton.addActionListener(e -> showAddNoteDialog());
+        bottomPanel.add(addNoteButton);
+    
+        panel.add(bottomPanel, BorderLayout.SOUTH);
+    
         return panel;
     }
 
+    private void configureBottomPanel(JPanel panel) { 
+        JButton addEventButton = new JButton("Adicionar Evento");
+        addEventButton.addActionListener(e -> showSimpleAddEventDialog());
+        panel.add(addEventButton);
+    
+        JButton addNoteButton = new JButton("Adicionar Nota");
+        addNoteButton.addActionListener(e -> showAddNoteToDateDialog());
+        panel.add(addNoteButton);
+    }
+
+private void showSimpleAddEventDialog() {
+    String date = JOptionPane.showInputDialog(frame, "Insira a data (dd/MM/yyyy):");
+    if (!isValidDate(date)) {
+        JOptionPane.showMessageDialog(frame, "Data inválida! Use o formato dd/MM/yyyy.", "Erro", JOptionPane.ERROR_MESSAGE);
+        return;
+    }
+
+    String eventTitle = JOptionPane.showInputDialog(frame, "Insira o título do evento:");
+    if (eventTitle == null || eventTitle.trim().isEmpty()) {
+        JOptionPane.showMessageDialog(frame, "O título do evento não pode estar vazio.", "Erro", JOptionPane.ERROR_MESSAGE);
+        return;
+    }
+
+    Evento evento = new Evento(eventTitle, date, "", "", "", "");
+    eventos.add(evento);
+
+    JOptionPane.showMessageDialog(frame, "Evento adicionado com sucesso!");
+    updateCalendarGrid();
+}
+
+private void showAddNoteToDateDialog() {
+    String date = JOptionPane.showInputDialog(frame, "Insira a data para adicionar a nota (dd/MM/yyyy):");
+    if (!isValidDate(date)) {
+        JOptionPane.showMessageDialog(frame, "Data inválida! Use o formato dd/MM/yyyy.", "Erro", JOptionPane.ERROR_MESSAGE);
+        return;
+    }
+
+    String noteContent = JOptionPane.showInputDialog(frame, "Insira a nota/observação:");
+    if (noteContent == null || noteContent.trim().isEmpty()) {
+        JOptionPane.showMessageDialog(frame, "A nota não pode estar vazia.", "Erro", JOptionPane.ERROR_MESSAGE);
+        return;
+    }
+
+    Nota novaNota = new Nota(date, noteContent);
+    notas.add(novaNota);
+
+    JOptionPane.showMessageDialog(frame, "Nota adicionada com sucesso!");
+    updateCalendarGrid();
+}
+
+private void showAddNoteDialog() {
+    JDialog dialog = new JDialog(frame, "Adicionar Nota", true);
+    dialog.setSize(300, 200);
+    dialog.setLayout(new BorderLayout());
+
+    JPanel inputPanel = new JPanel(new GridLayout(2, 1, 10, 10));
+    JTextField dateField = new JTextField("dd/MM/yyyy");
+    JTextArea observacoesField = new JTextArea(3, 20);
+
+    inputPanel.add(new JLabel("Data (dd/MM/yyyy):"));
+    inputPanel.add(dateField);
+    inputPanel.add(new JLabel("Observações:"));
+    inputPanel.add(new JScrollPane(observacoesField));
+
+    dialog.add(inputPanel, BorderLayout.CENTER);
+
+    JButton saveButton = new JButton("Salvar");
+    saveButton.addActionListener(e -> {
+        String date = dateField.getText();
+        String observacoes = observacoesField.getText();
+
+        if (!isValidDate(date)) {
+            JOptionPane.showMessageDialog(dialog, "Data inválida! Use o formato dd/MM/yyyy.", "Erro", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        Nota novaNota = new Nota(date, observacoes);
+        notas.add(novaNota);
+
+        dialog.dispose();
+        updateCalendarGrid();
+    });
+
+    dialog.add(saveButton, BorderLayout.SOUTH);
+    dialog.setVisible(true);
+}
+
+    private String formatEvents(List<String> events) {
+        StringBuilder sb = new StringBuilder("<html>");
+        for (String event : events) {
+            sb.append(event).append("<br>");
+        }
+        sb.append("</html>");
+        return sb.toString();
+    }
+
+    private String getMonthKey(Calendar calendar) {
+        return String.format("%02d/%04d", calendar.get(Calendar.MONTH) + 1, calendar.get(Calendar.YEAR));
+    }
+    private void updateDayHeaders() {
+        dayHeaders.removeAll();
+    
+        Calendar temp = (Calendar) currentMonth.clone();
+        temp.set(Calendar.DAY_OF_MONTH, 1);
+    
+        int startDay = temp.get(Calendar.DAY_OF_WEEK) - 1;
+        temp.add(Calendar.DAY_OF_MONTH, -startDay);
+    
+        for (int i = 0; i < 7; i++) {
+            JLabel dayNumberLabel = new JLabel(String.valueOf(temp.get(Calendar.DAY_OF_MONTH)), SwingConstants.CENTER);
+            dayNumberLabel.setFont(new Font("Arial", Font.BOLD, 14));
+            dayNumberLabel.setForeground(Color.WHITE);
+            dayHeaders.add(dayNumberLabel);
+            temp.add(Calendar.DAY_OF_MONTH, 1);
+        }
+    
+        String[] daysOfWeek = {"Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"};
+        for (String day : daysOfWeek) {
+            JLabel dayLabel = new JLabel(day, SwingConstants.CENTER);
+            dayLabel.setFont(new Font("Arial", Font.BOLD, 12));
+            dayLabel.setForeground(Color.WHITE);
+            dayHeaders.add(dayLabel);
+        }
+    
+        dayHeaders.revalidate();
+        dayHeaders.repaint();
+    }
+    
+    private void updateMonthLabel() {
+        String month = currentMonth.getDisplayName(Calendar.MONTH, Calendar.LONG, Locale.getDefault());
+        int year = currentMonth.get(Calendar.YEAR);
+        monthLabel.setText(month + " " + year);
+    }
+
+    private void changeMonth(int offset) {
+        currentMonth.add(Calendar.MONTH, offset);
+        updateMonthLabel();
+        updateCalendarGrid();
+    }
+    private void updateCalendarGrid() {
+        calendarPanel.removeAll();
+    
+
+        JPanel updatedCalendar = new JPanel(new BorderLayout());
+        JPanel timeAndDays = new JPanel(new GridLayout(24, 8));
+        timeAndDays.setBackground(PURPLE_BACKGROUND);
+    
+        Calendar tempCalendar = (Calendar) currentMonth.clone();
+        tempCalendar.set(Calendar.DAY_OF_MONTH, 1);
+        int firstDayOfWeek = tempCalendar.get(Calendar.DAY_OF_WEEK) - 1;
+        tempCalendar.add(Calendar.DAY_OF_MONTH, -firstDayOfWeek);
+    
+        for (int h = 0; h < 24; h++) {
+            JLabel timeLabel = new JLabel(String.format("%02d:00", h), SwingConstants.CENTER);
+            timeLabel.setFont(new Font("Arial", Font.PLAIN, 12));
+            timeLabel.setForeground(PURPLE_DARK);
+            timeAndDays.add(timeLabel);
+    
+            for (int d = 0; d < 7; d++) {
+                JPanel cellPanel = new JPanel(new BorderLayout());
+                cellPanel.setBackground(Color.WHITE);
+    
+                String dateKey = String.format("%02d/%02d/%04d",
+                        tempCalendar.get(Calendar.DAY_OF_MONTH),
+                        tempCalendar.get(Calendar.MONTH) + 1,
+                        tempCalendar.get(Calendar.YEAR)
+                );
+    
+                addEventToCalendarGrid(cellPanel, dateKey);
+                addNoteToCalendarGrid(cellPanel, dateKey);
+    
+                timeAndDays.add(cellPanel);
+                tempCalendar.add(Calendar.DAY_OF_MONTH, 1);
+            }
+        }
+    
+        updatedCalendar.add(timeAndDays, BorderLayout.CENTER);
+        calendarPanel.add(updatedCalendar, BorderLayout.CENTER);
+    
+        calendarPanel.revalidate();
+        calendarPanel.repaint();
+    }
+
+    private void addEventToCalendarGrid(JPanel cellPanel, String dateKey) {
+        JPanel eventPanel = new JPanel();
+        eventPanel.setLayout(new BoxLayout(eventPanel, BoxLayout.Y_AXIS));
+        eventPanel.setBackground(Color.WHITE);
+    
+        for (Evento evento : eventos) {
+            if (evento.getData().equals(dateKey)) {
+                JLabel eventLabel = new JLabel(evento.getTitulo());
+                eventLabel.setFont(new Font("Arial", Font.PLAIN, 10));
+                eventLabel.setForeground(PURPLE_DARK);
+    
+                eventPanel.add(eventLabel);
+            }
+        }
+    
+        cellPanel.add(eventPanel, BorderLayout.CENTER);
+    }
+
+    private void addNoteToCalendarGrid(JPanel cellPanel, String dateKey) {
+        JPanel notePanel = new JPanel();
+        notePanel.setLayout(new BoxLayout(notePanel, BoxLayout.Y_AXIS));
+        notePanel.setBackground(Color.WHITE);
+    
+        for (Nota nota : notas) {
+            if (nota.getData().equals(dateKey)) {
+                JLabel noteLabel = new JLabel(nota.getObservacoes());
+                noteLabel.setFont(new Font("Arial", Font.ITALIC, 10));
+                noteLabel.setForeground(PURPLE_LIGHT);
+    
+                notePanel.add(noteLabel);
+            }
+        }
+    
+        cellPanel.add(notePanel, BorderLayout.SOUTH);
+    }
+    
     private JPanel createPendenciasContent() {
         JPanel panel = new JPanel(new BorderLayout());
         
@@ -438,14 +1141,14 @@ public class SyncCesar {
         JDialog dialog = new JDialog(frame, "Adicionar Evento", true);
         dialog.setSize(300, 450);
         dialog.setLayout(new GridLayout(7, 2, 10, 10));
-
+    
         JTextField titleField = new JTextField();
         JTextField dateField = new JTextField("dd/MM/yyyy");
         JTextField timeField = new JTextField("HH:mm");
         JTextField typeField = new JTextField("Reunião/Lembrete");
         JTextField statusField = new JTextField("pendente");
         JTextArea descriptionField = new JTextArea(3, 20);
-
+    
         dialog.add(new JLabel("Título:"));
         dialog.add(titleField);
         dialog.add(new JLabel("Data:"));
@@ -458,7 +1161,7 @@ public class SyncCesar {
         dialog.add(statusField);
         dialog.add(new JLabel("Descrição:"));
         dialog.add(new JScrollPane(descriptionField));
-
+    
         JButton saveButton = new JButton("Salvar");
         saveButton.addActionListener(e -> {
             String title = titleField.getText();
@@ -467,58 +1170,23 @@ public class SyncCesar {
             String type = typeField.getText();
             String status = statusField.getText();
             String description = descriptionField.getText();
-
+    
             if (!isValidDate(date)) {
                 JOptionPane.showMessageDialog(dialog,
-                    "Data inválida! Use o formato dd/MM/yyyy",
-                    "Erro",
-                    JOptionPane.ERROR_MESSAGE);
+                        "Data inválida! Use o formato dd/MM/yyyy",
+                        "Erro",
+                        JOptionPane.ERROR_MESSAGE);
                 return;
             }
-
-            if (!isValidTime(time)) {
-                JOptionPane.showMessageDialog(dialog,
-                    "Hora inválida! Use o formato HH:mm",
-                    "Erro",
-                    JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-
+    
             Evento evento = new Evento(title, date, time, type, status, description);
             eventos.add(evento);
-
-            saveEventToFile(evento);
-
+    
             dialog.dispose();
-            updateMonthView((JTextArea) ((JScrollPane) calendarPanel.getComponent(1)).getViewport().getView());
-            
-            for (Component comp : tabbedPane.getComponents()) {
-                if (comp instanceof JPanel && tabbedPane.indexOfComponent(comp) == tabbedPane.indexOfTab("Pendências")) {
-                    JPanel pendenciasPanel = (JPanel) comp;
-                    
-                    if (pendenciasPanel.getComponent(0) instanceof JPanel) {
-                        pendenciasPanel.remove(0);
-                    }
-                    
-                    if (hasPendencias()) {
-                        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-                        JButton notifyButton = new JButton("Notificar Responsáveis");
-                        notifyButton.addActionListener(evt -> notifyResponsaveis());
-                        buttonPanel.add(notifyButton);
-                        pendenciasPanel.add(buttonPanel, BorderLayout.NORTH);
-                    }
-                    
-                    JTextArea pendenciasArea = (JTextArea) ((JScrollPane) pendenciasPanel.getComponent(pendenciasPanel.getComponentCount() - 1)).getViewport().getView();
-                    updatePendenciasView(pendenciasArea);
-                    
-                    pendenciasPanel.revalidate();
-                    pendenciasPanel.repaint();
-                    break;
-                }
-            }
+            updateCalendarGrid();
         });
+    
         dialog.add(saveButton);
-
         dialog.setVisible(true);
     }
 
@@ -567,10 +1235,10 @@ public class SyncCesar {
         StringBuilder eventsText = new StringBuilder("Eventos do Mês:\n");
         for (Evento evento : eventos) {
             eventsText.append("Título: ").append(evento.getTitulo()).append("\n")
-                      .append("Data e Hora: ").append(evento.getData()).append(" ").append(evento.getHora()).append("\n")
-                      .append("Tipo: ").append(evento.getTipo()).append("\n")
-                      .append("Status: ").append(evento.getStatus()).append("\n")
-                      .append("Descrição: ").append(evento.getDescricao()).append("\n\n");
+                    .append("Data e Hora: ").append(evento.getData()).append(" ").append(evento.getHora()).append("\n")
+                    .append("Tipo: ").append(evento.getTipo()).append("\n")
+                    .append("Status: ").append(evento.getStatus()).append("\n")
+                    .append("Descrição: ").append(evento.getDescricao()).append("\n\n");
         }
         monthView.setText(eventsText.toString());
     }
@@ -592,13 +1260,37 @@ public class SyncCesar {
                 String[] eventDetails = line.split(",");
                 if (eventDetails.length == 6) {
                     Evento evento = new Evento(eventDetails[0], eventDetails[1], eventDetails[2], 
-                                             eventDetails[3], eventDetails[4], eventDetails[5]);
+                                            eventDetails[3], eventDetails[4], eventDetails[5]);
                     eventos.add(evento);
                 }
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private void saveEventsToFile() {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter("eventos.txt", false))) {
+            for (Evento evento : eventos) {
+                writer.write(evento.getTitulo() + "," +
+                            evento.getData() + "," +
+                            evento.getHora() + "," +
+                            evento.getTipo() + "," +
+                            evento.getStatus() + "," +
+                            evento.getDescricao());
+                writer.newLine();
+            }
+        } catch (IOException e) {
+            JOptionPane.showMessageDialog(frame, "Erro ao salvar eventos: " + e.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
+        }
+    }
+
+    private void deleteEvent(String dateKey, String eventTitle) {
+        eventos.removeIf(event -> event.getData().equals(dateKey) && event.getTitulo().equals(eventTitle));
+        JOptionPane.showMessageDialog(frame, "Evento '" + eventTitle + "' excluído com sucesso!");
+
+        updateCalendarGrid();
     }
 
     private boolean hasPendencias() {
@@ -694,9 +1386,9 @@ public class SyncCesar {
                 Calendar dataEvento = Calendar.getInstance();
                 String[] dataParts = evento.getData().split("/");
                 dataEvento.set(
-                    Integer.parseInt(dataParts[2]), // ano
-                    Integer.parseInt(dataParts[1]) - 1, // mês (0-11)
-                    Integer.parseInt(dataParts[0]) // dia
+                    Integer.parseInt(dataParts[2]),
+                    Integer.parseInt(dataParts[1]) - 1,
+                    Integer.parseInt(dataParts[0])
                 );
                 dataEvento.set(Calendar.HOUR_OF_DAY, 0);
                 dataEvento.set(Calendar.MINUTE, 0);
@@ -796,3 +1488,22 @@ class Evento {
         return descricao;
     }
 }
+
+class Nota {
+    private String data;
+    private String observacoes;
+
+    public Nota(String data, String observacoes) {
+        this.data = data;
+        this.observacoes = observacoes;
+    }
+
+    public String getData() {
+        return data;
+    }
+
+    public String getObservacoes() {
+        return observacoes;
+    }
+}
+
