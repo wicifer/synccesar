@@ -15,6 +15,8 @@ public class SyncCesar {
     private List<Evento> eventos;
     private List<Nota> notas = new ArrayList<>();
     private JPanel dayHeaders;
+    private CardLayout cardLayout; // Gerenciar os painéis
+    private JPanel contentPanel; 
 
     private final Color PURPLE_PRIMARY = new Color(102, 51, 153);
     private final Color PURPLE_LIGHT = new Color(147, 112, 219);
@@ -283,14 +285,14 @@ public class SyncCesar {
         sideMenu.setBackground(PURPLE_PRIMARY);
     
         String[] menuItems = {"Dashboard", "Calendário", "Pendências", "Notificações"};
-        CardLayout cardLayout = new CardLayout();
-        JPanel contentPanel = new JPanel(cardLayout);
+        cardLayout = new CardLayout(); // Certifique-se de inicializar aqui
+        contentPanel = new JPanel(cardLayout); // Instancie o contentPanel
         contentPanel.setBackground(PURPLE_BACKGROUND);
     
         JPanel dashboardPanel = createDashboardContent();
         JPanel calendarPanel = createCalendarContentWithHours();
         JPanel pendenciasPanel = createPendenciasContent();
-        JPanel notificationsPanel = createNotificationsContent();
+        JPanel notificationsPanel = createNotificationsContent(); // Aba de Notificações
     
         contentPanel.add(dashboardPanel, "Dashboard");
         contentPanel.add(calendarPanel, "Calendário");
@@ -394,7 +396,7 @@ public class SyncCesar {
         mainContentPanel.add(taskSectionsPanel);
         panel.add(mainContentPanel, BorderLayout.CENTER);
     
-        JPanel notificationsPanel = buildNotificationPanel();
+        JPanel notificationsPanel = buildNotificationPanel(cardLayout, contentPanel); // Ajuste aqui
         panel.add(notificationsPanel, BorderLayout.SOUTH);
     
         return panel;
@@ -607,20 +609,22 @@ public class SyncCesar {
     
     
 
-    private JPanel createNotificationCard(String title, String message) {
+    private JPanel createNotificationCard(String title, String message, CardLayout cardLayout, JPanel contentPanel) {
         JPanel notificationCard = new JPanel(new BorderLayout());
         notificationCard.setBackground(new Color(240, 248, 255));
         notificationCard.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(Color.LIGHT_GRAY, 1),
                 BorderFactory.createEmptyBorder(10, 10, 10, 10)
         ));
-
-        JLabel titleLabel = new JLabel(title);
-        titleLabel.setFont(new Font("Arial", Font.BOLD, 12));
+    
+        // Título com emoji e fonte para emojis
+        JLabel titleLabel = new JLabel("🔔 " + title);
+        titleLabel.setFont(new Font("Segoe UI Emoji", Font.BOLD, 14)); // Fonte que suporta emojis
         titleLabel.setForeground(Color.BLACK);
-
-        JTextArea messageLabel = new JTextArea(message);
-        messageLabel.setFont(new Font("Arial", Font.PLAIN, 12));
+    
+        // Mensagem com emoji e fonte para emojis
+        JTextArea messageLabel = new JTextArea("✅ " + message);
+        messageLabel.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 12)); // Fonte que suporta emojis
         messageLabel.setForeground(Color.DARK_GRAY);
         messageLabel.setWrapStyleWord(true);
         messageLabel.setLineWrap(true);
@@ -631,35 +635,75 @@ public class SyncCesar {
         notificationCard.add(titleLabel, BorderLayout.NORTH);
         notificationCard.add(messageLabel, BorderLayout.CENTER);
     
+        // Torna a notificação clicável
+        notificationCard.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent e) {
+                cardLayout.show(contentPanel, "Notificações"); // Redireciona para a aba "Notificações"
+            }
+    
+            @Override
+            public void mouseEntered(java.awt.event.MouseEvent e) {
+                notificationCard.setBackground(new Color(230, 240, 250)); // Efeito visual
+            }
+    
+            @Override
+            public void mouseExited(java.awt.event.MouseEvent e) {
+                notificationCard.setBackground(new Color(240, 248, 255)); // Voltar ao padrão
+            }
+        });
+    
         return notificationCard;
     }
 
-    private JPanel buildNotificationPanel() {
+    private JPanel buildNotificationPanel(CardLayout cardLayout, JPanel contentPanel) {
         JPanel panel = new JPanel(new BorderLayout());
         panel.setBackground(PURPLE_BACKGROUND);
-
+    
         JLabel titleLabel = new JLabel("Notificações para essa semana", SwingConstants.CENTER);
-        titleLabel.setFont(new Font("Arial", Font.BOLD, 16));
+        titleLabel.setFont(new Font("Segoe UI Emoji", Font.BOLD, 16));
         titleLabel.setForeground(PURPLE_DARK);
         panel.add(titleLabel, BorderLayout.NORTH);
-
+    
         JPanel notificationList = new JPanel();
         notificationList.setLayout(new BoxLayout(notificationList, BoxLayout.Y_AXIS));
         notificationList.setBackground(PURPLE_BACKGROUND);
-
+    
+        // Notificação 1
         notificationList.add(createNotificationCard(
-                "Lembrete de prazo",
-                "Faltam 3 dias para o término do prazo da etapa de revisão do projeto."
+            "🔔 Lembrete de prazo",
+            "Faltam 3 dias para o término do prazo da etapa de revisão do projeto.",
+            cardLayout, contentPanel
         ));
+    
+        // Notificação 2
         notificationList.add(createNotificationCard(
-                "Aviso de Conclusão de Etapa",
-                "A etapa 'Planejamento' foi concluída. A próxima etapa inicia em 01/11."
+            "✅ Conclusão de Etapa",
+            "A etapa 'Planejamento' foi concluída. A próxima etapa inicia em 01/11.",
+            cardLayout, contentPanel
         ));
+    
+        // Notificação 3
         notificationList.add(createNotificationCard(
-                "Atualização no sistema",
-                "O sistema estará indisponível para manutenção no próximo final de semana."
+            "⚠️ Atualização no sistema",
+            "O sistema estará indisponível para manutenção no próximo final de semana.",
+            cardLayout, contentPanel
         ));
-
+    
+        // Nova notificação 4
+        notificationList.add(createNotificationCard(
+            "📅 Reunião marcada",
+            "A reunião de planejamento foi agendada para 03/11 às 10:00.",
+            cardLayout, contentPanel
+        ));
+    
+        // Nova notificação 5
+        notificationList.add(createNotificationCard(
+            "📢 Alerta de segurança",
+            "Houve uma tentativa de acesso não autorizado. Verifique as configurações de segurança.",
+            cardLayout, contentPanel
+        ));
+    
         JScrollPane scrollPane = new JScrollPane(notificationList);
         scrollPane.setBorder(BorderFactory.createEmptyBorder());
         scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
@@ -668,7 +712,7 @@ public class SyncCesar {
     
         return panel;
     }
-
+    
     private JPanel createSectionPanel(String title, int percentage) {
         JPanel sectionPanel = new JPanel();
         sectionPanel.setLayout(new BoxLayout(sectionPanel, BoxLayout.Y_AXIS));
@@ -1133,9 +1177,94 @@ private void showAddNoteDialog() {
 
     private JPanel createNotificationsContent() {
         JPanel panel = new JPanel(new BorderLayout());
-        panel.add(new JLabel("Notificações aparecerão aqui", SwingConstants.CENTER), BorderLayout.CENTER);
+        panel.setBackground(PURPLE_BACKGROUND);
+    
+        // Título com ícone do sininho
+        JPanel headerPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        headerPanel.setBackground(PURPLE_BACKGROUND);
+    
+        ImageIcon bellIcon = new ImageIcon("resources/icons8-sino-64.png"); // Adicione o caminho do ícone
+        JLabel bellLabel = new JLabel(bellIcon);
+    
+        JLabel titleLabel = new JLabel("Notificações");
+        titleLabel.setFont(new Font("Arial", Font.BOLD, 24));
+        titleLabel.setForeground(PURPLE_DARK);
+    
+        headerPanel.add(bellLabel);
+        headerPanel.add(titleLabel);
+    
+        panel.add(headerPanel, BorderLayout.NORTH);
+    
+        // Lista de notificações estilizadas
+        JPanel notificationList = new JPanel();
+        notificationList.setLayout(new BoxLayout(notificationList, BoxLayout.Y_AXIS));
+        notificationList.setBackground(PURPLE_BACKGROUND);
+    
+        // Adicionando notificações simuladas com estilo
+        notificationList.add(createStyledNotificationCard(
+            "🔔 Lembrete de prazo",
+            "Faltam 3 dias para o término do prazo da etapa de revisão do projeto."
+        ));
+        notificationList.add(Box.createRigidArea(new Dimension(0, 10)));
+    
+        notificationList.add(createStyledNotificationCard(
+            "✅ Conclusão de Etapa",
+            "A etapa 'Planejamento' foi concluída. A próxima etapa inicia em 01/11."
+        ));
+        notificationList.add(Box.createRigidArea(new Dimension(0, 10)));
+    
+        notificationList.add(createStyledNotificationCard(
+            "⚠️ Atualização no sistema",
+            "O sistema estará indisponível para manutenção no próximo final de semana."
+        ));
+    
+        // Scroll para notificações
+        JScrollPane scrollPane = new JScrollPane(notificationList);
+        scrollPane.setBorder(BorderFactory.createEmptyBorder());
+        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+        panel.add(scrollPane, BorderLayout.CENTER);
+    
         return panel;
     }
+
+    private JPanel createStyledNotificationCard(String title, String message) {
+        JPanel notificationCard = new JPanel(new BorderLayout());
+        notificationCard.setBackground(Color.WHITE);
+        notificationCard.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(PURPLE_LIGHT, 1),
+            BorderFactory.createEmptyBorder(15, 15, 15, 15)
+        ));
+    
+        // Título com fonte maior
+        JLabel titleLabel = new JLabel(title);
+        titleLabel.setFont(new Font("Arial", Font.BOLD, 18));
+        titleLabel.setForeground(PURPLE_DARK);
+    
+        // Mensagem com fonte padrão
+        JLabel messageLabel = new JLabel("<html>" + message + "</html>");
+        messageLabel.setFont(new Font("Arial", Font.PLAIN, 14));
+        messageLabel.setForeground(Color.GRAY);
+    
+        notificationCard.add(titleLabel, BorderLayout.NORTH);
+        notificationCard.add(messageLabel, BorderLayout.CENTER);
+    
+        // Efeito ao passar o mouse
+        notificationCard.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseEntered(java.awt.event.MouseEvent e) {
+                notificationCard.setBackground(new Color(230, 240, 250));
+            }
+    
+            @Override
+            public void mouseExited(java.awt.event.MouseEvent e) {
+                notificationCard.setBackground(Color.WHITE);
+            }
+        });
+    
+        return notificationCard;
+    }
+    
+    
 
     private void showAddEventDialog(JPanel calendarPanel) {
         JDialog dialog = new JDialog(frame, "Adicionar Evento", true);
