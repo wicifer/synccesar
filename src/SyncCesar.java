@@ -1,4 +1,4 @@
-import java.awt.*; 
+import java.awt.*;
 import java.io.*;
 import java.util.*;
 import java.util.List;
@@ -15,8 +15,8 @@ public class SyncCesar {
     private List<Evento> eventos;
     private List<Nota> notas = new ArrayList<>();
     private JPanel dayHeaders;
-    private CardLayout cardLayout; // Gerenciar os painéis
-    private JPanel contentPanel; 
+    private CardLayout cardLayout;
+    private JPanel contentPanel;
 
     private final Color PURPLE_PRIMARY = new Color(102, 51, 153);
     private final Color PURPLE_LIGHT = new Color(147, 112, 219);
@@ -272,45 +272,44 @@ public class SyncCesar {
         return null;
     }
 
-    private void createMainPanel() {
+    private JPanel createMainPanel() {
         frame.getContentPane().removeAll();
-        
+    
         JPanel mainPanel = new JPanel(new BorderLayout());
         mainPanel.setBackground(PURPLE_BACKGROUND);
-        
+    
         JPanel sideMenu = new JPanel();
         sideMenu.setLayout(new BoxLayout(sideMenu, BoxLayout.Y_AXIS));
         sideMenu.setPreferredSize(new Dimension(150, frame.getHeight()));
         sideMenu.setBorder(BorderFactory.createEtchedBorder());
         sideMenu.setBackground(PURPLE_PRIMARY);
     
-        String[] menuItems = {"Dashboard", "Calendário", "Pendências", "Notificações"};
-        cardLayout = new CardLayout(); // Certifique-se de inicializar aqui
-        contentPanel = new JPanel(cardLayout); // Instancie o contentPanel
+        String[] menuItems = {"Dashboard", "Calendário", "Notificações", "Configurações"};
+        cardLayout = new CardLayout();
+        contentPanel = new JPanel(cardLayout);
         contentPanel.setBackground(PURPLE_BACKGROUND);
     
         JPanel dashboardPanel = createDashboardContent();
         JPanel calendarPanel = createCalendarContentWithHours();
-        JPanel pendenciasPanel = createPendenciasContent();
-        JPanel notificationsPanel = createNotificationsContent(); // Aba de Notificações
+        JPanel notificationsPanel = createNotificationsContent();
+        JPanel settingsPanel = createSettingsContent();
     
         contentPanel.add(dashboardPanel, "Dashboard");
         contentPanel.add(calendarPanel, "Calendário");
-        contentPanel.add(pendenciasPanel, "Pendências");
         contentPanel.add(notificationsPanel, "Notificações");
+        contentPanel.add(settingsPanel, "Configurações");
     
         for (String menuItem : menuItems) {
             JButton menuButton = new JButton(menuItem);
             menuButton.setMaximumSize(new Dimension(150, 40));
             menuButton.setAlignmentX(Component.CENTER_ALIGNMENT);
-            
             menuButton.setFocusPainted(false);
             menuButton.setBorderPainted(false);
             menuButton.setBackground(PURPLE_PRIMARY);
             menuButton.setForeground(Color.WHITE);
-            
+    
             menuButton.addActionListener(e -> cardLayout.show(contentPanel, menuItem));
-            
+    
             menuButton.addMouseListener(new java.awt.event.MouseAdapter() {
                 public void mouseEntered(java.awt.event.MouseEvent evt) {
                     menuButton.setBackground(PURPLE_LIGHT);
@@ -320,7 +319,7 @@ public class SyncCesar {
                     menuButton.setBackground(PURPLE_PRIMARY);
                 }
             });
-            
+    
             sideMenu.add(menuButton);
             sideMenu.add(Box.createRigidArea(new Dimension(0, 5)));
         }
@@ -328,22 +327,67 @@ public class SyncCesar {
         mainPanel.add(sideMenu, BorderLayout.WEST);
         mainPanel.add(contentPanel, BorderLayout.CENTER);
     
+        JPanel topPanel = new JPanel(new BorderLayout());
+        topPanel.setBackground(PURPLE_LIGHT);
+    
+        JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        searchPanel.setBackground(PURPLE_LIGHT);
+    
+        JTextField searchField = new JTextField();
+        searchField.setPreferredSize(new Dimension(200, 30));
+        searchField.setForeground(Color.DARK_GRAY);
+        searchField.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY, 1));
+        searchField.setToolTipText("Digite algo e pressione Enter");
+    
+        JLabel searchIcon = new JLabel(new ImageIcon("resources/icons8-pesquisa-30.png"));
+        searchPanel.add(searchIcon);
+        searchPanel.add(searchField);
+    
+        searchField.addActionListener(e -> {
+            String query = searchField.getText().trim();
+            if (query.isEmpty()) {
+                JOptionPane.showMessageDialog(frame, "Digite algo para pesquisar.", "Aviso", JOptionPane.WARNING_MESSAGE);
+            } else {
+                JOptionPane.showMessageDialog(frame, "Resultado não encontrado para: " + query, "Pesquisa", JOptionPane.INFORMATION_MESSAGE);
+            }
+            searchField.setText("");
+        });
+    
+        topPanel.add(searchPanel, BorderLayout.EAST);
+        mainPanel.add(topPanel, BorderLayout.NORTH);
+    
         frame.add(mainPanel);
         frame.revalidate();
         frame.repaint();
+        return mainPanel;
     }
 
     private JPanel createDashboardContent() {
         JPanel panel = new JPanel(new BorderLayout());
         panel.setBackground(PURPLE_BACKGROUND);
     
-        JPanel titlePanel = new JPanel();
-        titlePanel.setBackground(PURPLE_BACKGROUND);
+        JPanel topPanel = new JPanel(new BorderLayout());
+        topPanel.setBackground(PURPLE_BACKGROUND);
+    
         JLabel titleLabel = new JLabel("Visão geral de cada processo", SwingConstants.CENTER);
         titleLabel.setFont(new Font("Arial", Font.BOLD, 20));
         titleLabel.setForeground(PURPLE_DARK);
-        titlePanel.add(titleLabel);
-        panel.add(titlePanel, BorderLayout.NORTH);
+        topPanel.add(titleLabel, BorderLayout.CENTER);
+
+        JLabel settingsLabel = new JLabel("⚙");
+        settingsLabel.setFont(new Font("Segoe UI Emoji", Font.BOLD, 24));
+        settingsLabel.setForeground(Color.BLACK);
+        settingsLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        settingsLabel.setToolTipText("Configurações");
+    
+        settingsLabel.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent e) {
+                cardLayout.show(contentPanel, "Configurações");
+            }
+        });
+        topPanel.add(settingsLabel, BorderLayout.EAST);
+    
+        panel.add(topPanel, BorderLayout.NORTH);
     
         JPanel mainContentPanel = new JPanel(new GridLayout(2, 1, 10, 10));
         mainContentPanel.setBackground(PURPLE_BACKGROUND);
@@ -368,8 +412,8 @@ public class SyncCesar {
             90,
             Color.GREEN,
             Arrays.asList(
-                "01 - Atualizar lista de pagamentos",
-                "02 - Confirmar transferências!",
+                "01 - Atualizar lista de pagamentos ✓",
+                "02 - Confirmar transferências ✓",
                 "03 - Revisar relatórios financeiros"
             )
         ));
@@ -385,7 +429,7 @@ public class SyncCesar {
         ));
     
         mainContentPanel.add(progressPanel);
-
+    
         JPanel taskSectionsPanel = new JPanel(new GridLayout(1, 3, 10, 10));
         taskSectionsPanel.setBackground(PURPLE_BACKGROUND);
     
@@ -396,7 +440,7 @@ public class SyncCesar {
         mainContentPanel.add(taskSectionsPanel);
         panel.add(mainContentPanel, BorderLayout.CENTER);
     
-        JPanel notificationsPanel = buildNotificationPanel(cardLayout, contentPanel); // Ajuste aqui
+        JPanel notificationsPanel = buildNotificationPanel(cardLayout, contentPanel);
         panel.add(notificationsPanel, BorderLayout.SOUTH);
     
         return panel;
@@ -617,14 +661,12 @@ public class SyncCesar {
                 BorderFactory.createEmptyBorder(10, 10, 10, 10)
         ));
     
-        // Título com emoji e fonte para emojis
         JLabel titleLabel = new JLabel("🔔 " + title);
-        titleLabel.setFont(new Font("Segoe UI Emoji", Font.BOLD, 14)); // Fonte que suporta emojis
+        titleLabel.setFont(new Font("Segoe UI Emoji", Font.BOLD, 14));
         titleLabel.setForeground(Color.BLACK);
     
-        // Mensagem com emoji e fonte para emojis
         JTextArea messageLabel = new JTextArea("✅ " + message);
-        messageLabel.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 12)); // Fonte que suporta emojis
+        messageLabel.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 12));
         messageLabel.setForeground(Color.DARK_GRAY);
         messageLabel.setWrapStyleWord(true);
         messageLabel.setLineWrap(true);
@@ -635,21 +677,20 @@ public class SyncCesar {
         notificationCard.add(titleLabel, BorderLayout.NORTH);
         notificationCard.add(messageLabel, BorderLayout.CENTER);
     
-        // Torna a notificação clicável
         notificationCard.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
             public void mouseClicked(java.awt.event.MouseEvent e) {
-                cardLayout.show(contentPanel, "Notificações"); // Redireciona para a aba "Notificações"
+                cardLayout.show(contentPanel, "Notificações");
             }
     
             @Override
             public void mouseEntered(java.awt.event.MouseEvent e) {
-                notificationCard.setBackground(new Color(230, 240, 250)); // Efeito visual
+                notificationCard.setBackground(new Color(230, 240, 250));
             }
     
             @Override
             public void mouseExited(java.awt.event.MouseEvent e) {
-                notificationCard.setBackground(new Color(240, 248, 255)); // Voltar ao padrão
+                notificationCard.setBackground(new Color(240, 248, 255));
             }
         });
     
@@ -669,45 +710,55 @@ public class SyncCesar {
         notificationList.setLayout(new BoxLayout(notificationList, BoxLayout.Y_AXIS));
         notificationList.setBackground(PURPLE_BACKGROUND);
     
-        // Notificação 1
         notificationList.add(createNotificationCard(
             "🔔 Lembrete de prazo",
             "Faltam 3 dias para o término do prazo da etapa de revisão do projeto.",
             cardLayout, contentPanel
         ));
+        notificationList.add(Box.createRigidArea(new Dimension(0, 10)));
     
-        // Notificação 2
         notificationList.add(createNotificationCard(
             "✅ Conclusão de Etapa",
             "A etapa 'Planejamento' foi concluída. A próxima etapa inicia em 01/11.",
             cardLayout, contentPanel
         ));
+        notificationList.add(Box.createRigidArea(new Dimension(0, 10)));
     
-        // Notificação 3
         notificationList.add(createNotificationCard(
             "⚠️ Atualização no sistema",
             "O sistema estará indisponível para manutenção no próximo final de semana.",
             cardLayout, contentPanel
         ));
     
-        // Nova notificação 4
-        notificationList.add(createNotificationCard(
-            "📅 Reunião marcada",
-            "A reunião de planejamento foi agendada para 03/11 às 10:00.",
-            cardLayout, contentPanel
-        ));
+        notificationList.add(Box.createRigidArea(new Dimension(0, 20)));
     
-        // Nova notificação 5
-        notificationList.add(createNotificationCard(
-            "📢 Alerta de segurança",
-            "Houve uma tentativa de acesso não autorizado. Verifique as configurações de segurança.",
-            cardLayout, contentPanel
-        ));
+        JLabel moreNotificationsLabel = new JLabel("Há mais notificações... Clique aqui para ver todas");
+        moreNotificationsLabel.setFont(new Font("Segoe UI Emoji", Font.BOLD, 14));
+        moreNotificationsLabel.setForeground(PURPLE_DARK);
+        moreNotificationsLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
+    
+        moreNotificationsLabel.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent e) {
+                cardLayout.show(contentPanel, "Notificações");
+            }
+    
+            @Override
+            public void mouseEntered(java.awt.event.MouseEvent e) {
+                moreNotificationsLabel.setForeground(PURPLE_LIGHT);
+            }
+    
+            @Override
+            public void mouseExited(java.awt.event.MouseEvent e) {
+                moreNotificationsLabel.setForeground(PURPLE_DARK);
+            }
+        });
+    
+        notificationList.add(moreNotificationsLabel);
     
         JScrollPane scrollPane = new JScrollPane(notificationList);
         scrollPane.setBorder(BorderFactory.createEmptyBorder());
         scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-        scrollPane.setPreferredSize(new Dimension(300, 150));
         panel.add(scrollPane, BorderLayout.CENTER);
     
         return panel;
@@ -753,7 +804,7 @@ public class SyncCesar {
         String[] daysOfWeek = {"Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"};
         for (String day : daysOfWeek) {
             JLabel dayLabel = new JLabel(day, SwingConstants.CENTER);
-            dayLabel.setForeground(Color.WHITE); // Cor do texto
+            dayLabel.setForeground(Color.WHITE);
             dayLabel.setFont(new Font("Arial", Font.BOLD, 14));
             weekDaysPanel.add(dayLabel);
         }
@@ -761,6 +812,185 @@ public class SyncCesar {
         return weekDaysPanel;
     }
 
+    private JPanel createSettingsContent() {
+        JPanel settingsPanel = new JPanel();
+        settingsPanel.setLayout(new BoxLayout(settingsPanel, BoxLayout.Y_AXIS));
+        settingsPanel.setBackground(PURPLE_BACKGROUND);
+        settingsPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+    
+        JLabel titleLabel = new JLabel("Configurações do Sistema");
+        titleLabel.setFont(new Font("Arial", Font.BOLD, 28));
+        titleLabel.setForeground(PURPLE_DARK);
+        titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        settingsPanel.add(titleLabel);
+        settingsPanel.add(Box.createRigidArea(new Dimension(0, 20)));
+    
+        JPanel profileSection = createProfileSection();
+        settingsPanel.add(profileSection);
+        settingsPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+    
+        JPanel themeSection = createThemeSection();
+        settingsPanel.add(themeSection);
+        settingsPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+    
+        JPanel languageSection = createLanguageSection();
+        settingsPanel.add(languageSection);
+        settingsPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+    
+        JPanel accessibilitySection = createAccessibilitySection();
+        settingsPanel.add(accessibilitySection);
+        settingsPanel.add(Box.createRigidArea(new Dimension(0, 20)));
+
+        JButton saveButton = new JButton("Salvar Alterações");
+        saveButton.setFont(new Font("Arial", Font.BOLD, 18));
+        saveButton.setBackground(PURPLE_PRIMARY);
+        saveButton.setForeground(Color.WHITE);
+        saveButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+        saveButton.addActionListener(e -> {
+            int confirm = JOptionPane.showConfirmDialog(
+                    settingsPanel,
+                    "Deseja salvar as alterações?",
+                    "Salvar Alterações",
+                    JOptionPane.YES_NO_OPTION
+            );
+            if (confirm == JOptionPane.YES_OPTION) {
+                JOptionPane.showMessageDialog(settingsPanel, "Alterações salvas com sucesso!");
+            }
+        });
+        settingsPanel.add(saveButton);
+    
+        return settingsPanel;
+    }
+    
+    private JPanel createProfileSection() {
+        JPanel panel = new JPanel();
+        panel.setLayout(new BorderLayout());
+        panel.setBackground(Color.WHITE);
+        panel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(PURPLE_LIGHT), "Perfil do Usuário"));
+    
+        JPanel profileInfoPanel = new JPanel(new GridLayout(3, 2, 10, 10));
+        profileInfoPanel.setBackground(Color.WHITE);
+    
+        JLabel nameLabel = new JLabel("Nome:");
+        nameLabel.setFont(new Font("Arial", Font.PLAIN, 16));
+        JTextField nameField = new JTextField("teste");
+        nameField.setFont(new Font("Arial", Font.PLAIN, 16));
+    
+        JLabel emailLabel = new JLabel("E-mail:");
+        emailLabel.setFont(new Font("Arial", Font.PLAIN, 16));
+        JTextField emailField = new JTextField("email@exemplo.com");
+        emailField.setFont(new Font("Arial", Font.PLAIN, 16));
+    
+        profileInfoPanel.add(nameLabel);
+        profileInfoPanel.add(nameField);
+        profileInfoPanel.add(emailLabel);
+        profileInfoPanel.add(emailField);
+    
+        JPanel profileImagePanel = new JPanel(new BorderLayout());
+        JLabel profileImage = new JLabel(new ImageIcon(new ImageIcon("resources/icons8-conta-de-teste-48.png").getImage()
+                .getScaledInstance(80, 80, Image.SCALE_SMOOTH)));
+        profileImage.setHorizontalAlignment(SwingConstants.CENTER);
+        profileImagePanel.setBackground(Color.WHITE);
+        profileImagePanel.add(profileImage, BorderLayout.CENTER);
+    
+        JButton resetPasswordButton = new JButton("Redefinir Senha");
+        resetPasswordButton.setFont(new Font("Arial", Font.BOLD, 16));
+        resetPasswordButton.setBackground(PURPLE_PRIMARY);
+        resetPasswordButton.setForeground(Color.WHITE);
+        resetPasswordButton.addActionListener(e -> JOptionPane.showMessageDialog(panel, "Funcionalidade para redefinir senha."));
+    
+        panel.add(profileInfoPanel, BorderLayout.CENTER);
+        panel.add(profileImagePanel, BorderLayout.WEST);
+        panel.add(resetPasswordButton, BorderLayout.SOUTH);
+    
+        return panel;
+    }
+    
+    private JPanel createThemeSection() {
+        JPanel panel = new JPanel(new GridLayout(1, 2, 10, 10));
+        panel.setBackground(Color.WHITE);
+        panel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(PURPLE_LIGHT), "Tema"));
+    
+        JButton lightThemeButton = new JButton("Claro");
+        JButton darkThemeButton = new JButton("Escuro");
+        lightThemeButton.setFont(new Font("Arial", Font.PLAIN, 16));
+        darkThemeButton.setFont(new Font("Arial", Font.PLAIN, 16));
+        lightThemeButton.setBackground(Color.LIGHT_GRAY);
+        darkThemeButton.setBackground(Color.DARK_GRAY);
+        lightThemeButton.setForeground(Color.BLACK);
+        darkThemeButton.setForeground(Color.WHITE);
+    
+        lightThemeButton.addActionListener(e -> JOptionPane.showMessageDialog(panel, "Tema Claro selecionado."));
+        darkThemeButton.addActionListener(e -> JOptionPane.showMessageDialog(panel, "Tema Escuro selecionado."));
+    
+        panel.add(lightThemeButton);
+        panel.add(darkThemeButton);
+    
+        return panel;
+    }
+    
+    private JPanel createLanguageSection() {
+        JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        panel.setBackground(Color.WHITE);
+        panel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(PURPLE_LIGHT), "Idioma"));
+    
+        JLabel languageLabel = new JLabel("Selecione o idioma:");
+        languageLabel.setFont(new Font("Arial", Font.PLAIN, 16));
+    
+        JComboBox<String> languageComboBox = new JComboBox<>(new String[]{"Português", "Inglês", "Espanhol"});
+        languageComboBox.setFont(new Font("Arial", Font.PLAIN, 16));
+        languageComboBox.addActionListener(e -> {
+            String selectedLanguage = (String) languageComboBox.getSelectedItem();
+            JOptionPane.showMessageDialog(panel, "Idioma selecionado: " + selectedLanguage);
+        });
+    
+        panel.add(languageLabel);
+        panel.add(languageComboBox);
+    
+        return panel;
+    }
+    
+    private JPanel createAccessibilitySection() {
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setBackground(Color.WHITE);
+        panel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(PURPLE_LIGHT), "Acessibilidade"));
+    
+        JLabel fontSizeLabel = new JLabel("Tamanho da Fonte:");
+        fontSizeLabel.setFont(new Font("Arial", Font.PLAIN, 16));
+        fontSizeLabel.setHorizontalAlignment(SwingConstants.CENTER);
+    
+        JSlider fontSizeSlider = new JSlider(10, 30, 16);
+        fontSizeSlider.setMajorTickSpacing(5);
+        fontSizeSlider.setMinorTickSpacing(1);
+        fontSizeSlider.setPaintTicks(true);
+        fontSizeSlider.setPaintLabels(true);
+        fontSizeSlider.addChangeListener(e -> adjustFontSize(fontSizeSlider.getValue()));
+    
+        panel.add(fontSizeLabel, BorderLayout.NORTH);
+        panel.add(fontSizeSlider, BorderLayout.CENTER);
+    
+        return panel;
+    }
+    
+    private void adjustFontSize(int fontSize) {
+        SwingUtilities.invokeLater(() -> {
+            for (Component component : frame.getContentPane().getComponents()) {
+                updateFont(component, new Font("Arial", Font.PLAIN, fontSize));
+            }
+            frame.revalidate();
+            frame.repaint();
+        });
+    }
+    
+    private void updateFont(Component component, Font font) {
+        component.setFont(font);
+        if (component instanceof Container) {
+            for (Component child : ((Container) component).getComponents()) {
+                updateFont(child, font);
+            }
+        }
+    }
+    
     private JPanel createCalendarContentWithHours() {
         JPanel panel = new JPanel(new BorderLayout());
 
@@ -1156,34 +1386,14 @@ private void showAddNoteDialog() {
         cellPanel.add(notePanel, BorderLayout.SOUTH);
     }
     
-    private JPanel createPendenciasContent() {
-        JPanel panel = new JPanel(new BorderLayout());
-        
-        JTextArea pendenciasArea = new JTextArea();
-        pendenciasArea.setEditable(false);
-        JScrollPane scrollPane = new JScrollPane(pendenciasArea);
-        panel.add(scrollPane, BorderLayout.CENTER);
-
-        if (hasPendencias()) {
-            JButton notifyButton = new JButton("Notificar Responsáveis");
-            notifyButton.addActionListener(e -> notifyResponsaveis());
-            panel.add(notifyButton, BorderLayout.NORTH);
-        }
-
-        updatePendenciasView(pendenciasArea);
-        
-        return panel;
-    }
-
     private JPanel createNotificationsContent() {
         JPanel panel = new JPanel(new BorderLayout());
         panel.setBackground(PURPLE_BACKGROUND);
     
-        // Título com ícone do sininho
         JPanel headerPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         headerPanel.setBackground(PURPLE_BACKGROUND);
     
-        ImageIcon bellIcon = new ImageIcon("resources/icons8-sino-64.png"); // Adicione o caminho do ícone
+        ImageIcon bellIcon = new ImageIcon("resources/icons8-sino-64.png");
         JLabel bellLabel = new JLabel(bellIcon);
     
         JLabel titleLabel = new JLabel("Notificações");
@@ -1195,12 +1405,10 @@ private void showAddNoteDialog() {
     
         panel.add(headerPanel, BorderLayout.NORTH);
     
-        // Lista de notificações estilizadas
         JPanel notificationList = new JPanel();
         notificationList.setLayout(new BoxLayout(notificationList, BoxLayout.Y_AXIS));
         notificationList.setBackground(PURPLE_BACKGROUND);
     
-        // Adicionando notificações simuladas com estilo
         notificationList.add(createStyledNotificationCard(
             "🔔 Lembrete de prazo",
             "Faltam 3 dias para o término do prazo da etapa de revisão do projeto."
@@ -1217,8 +1425,44 @@ private void showAddNoteDialog() {
             "⚠️ Atualização no sistema",
             "O sistema estará indisponível para manutenção no próximo final de semana."
         ));
+        notificationList.add(Box.createRigidArea(new Dimension(0, 10)));
     
-        // Scroll para notificações
+        notificationList.add(createStyledNotificationCard(
+            "📅 Reunião marcada",
+            "A reunião de planejamento foi agendada para 03/11 às 10:00."
+        ));
+        notificationList.add(Box.createRigidArea(new Dimension(0, 10)));
+    
+        notificationList.add(createStyledNotificationCard(
+            "📢 Alerta de segurança",
+            "Houve uma tentativa de acesso não autorizado. Verifique as configurações de segurança."
+        ));
+        notificationList.add(Box.createRigidArea(new Dimension(0, 10)));
+    
+        notificationList.add(createStyledNotificationCard(
+            "🔍 Revisão dos processos",
+            "A revisão de todos os processos internos está marcada para o dia 05/11 às 14:00."
+        ));
+        notificationList.add(Box.createRigidArea(new Dimension(0, 10)));
+    
+        notificationList.add(createStyledNotificationCard(
+            "🛠️ Manutenção programada",
+            "A manutenção no servidor será realizada no dia 07/11 das 02:00 às 06:00."
+        ));
+        notificationList.add(Box.createRigidArea(new Dimension(0, 10)));
+    
+        notificationList.add(createStyledNotificationCard(
+            "🚨 Alerta de prazo",
+            "O prazo para submissão dos relatórios está se aproximando! Envie até 10/11."
+        ));
+        notificationList.add(Box.createRigidArea(new Dimension(0, 10)));
+    
+        notificationList.add(createStyledNotificationCard(
+            "📊 Relatórios disponíveis",
+            "Os relatórios financeiros do mês anterior já estão disponíveis para consulta."
+        ));
+        notificationList.add(Box.createRigidArea(new Dimension(0, 10)));
+    
         JScrollPane scrollPane = new JScrollPane(notificationList);
         scrollPane.setBorder(BorderFactory.createEmptyBorder());
         scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
@@ -1226,6 +1470,7 @@ private void showAddNoteDialog() {
     
         return panel;
     }
+    
 
     private JPanel createStyledNotificationCard(String title, String message) {
         JPanel notificationCard = new JPanel(new BorderLayout());
@@ -1234,21 +1479,18 @@ private void showAddNoteDialog() {
             BorderFactory.createLineBorder(PURPLE_LIGHT, 1),
             BorderFactory.createEmptyBorder(15, 15, 15, 15)
         ));
-    
-        // Título com fonte maior
+
         JLabel titleLabel = new JLabel(title);
-        titleLabel.setFont(new Font("Arial", Font.BOLD, 18));
+        titleLabel.setFont(new Font("Segoe UI Emoji", Font.BOLD, 18));
         titleLabel.setForeground(PURPLE_DARK);
-    
-        // Mensagem com fonte padrão
+
         JLabel messageLabel = new JLabel("<html>" + message + "</html>");
-        messageLabel.setFont(new Font("Arial", Font.PLAIN, 14));
+        messageLabel.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 14));
         messageLabel.setForeground(Color.GRAY);
-    
+
         notificationCard.add(titleLabel, BorderLayout.NORTH);
         notificationCard.add(messageLabel, BorderLayout.CENTER);
-    
-        // Efeito ao passar o mouse
+
         notificationCard.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
             public void mouseEntered(java.awt.event.MouseEvent e) {
@@ -1263,8 +1505,6 @@ private void showAddNoteDialog() {
     
         return notificationCard;
     }
-    
-    
 
     private void showAddEventDialog(JPanel calendarPanel) {
         JDialog dialog = new JDialog(frame, "Adicionar Evento", true);
@@ -1374,7 +1614,7 @@ private void showAddNoteDialog() {
 
     private void saveEventToFile(Evento evento) {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter("eventos.txt", true))) {
-            writer.write(evento.getTitulo() + "," + evento.getData() + "," + evento.getHora() + "," + 
+            writer.write(evento.getTitulo() + "," + evento.getData() + "," + evento.getHora() + "," +
                         evento.getTipo() + "," + evento.getStatus() + "," + evento.getDescricao());
             writer.newLine();
         } catch (IOException e) {
