@@ -18,16 +18,14 @@ public class SyncCesar {
     private CardLayout cardLayout;
     private JPanel contentPanel;
 
-    private final Color PURPLE_PRIMARY = new Color(102, 51, 153);
-    private final Color PURPLE_LIGHT = new Color(147, 112, 219);
-    private final Color PURPLE_DARK = new Color(75, 0, 130);
-    private final Color PURPLE_BACKGROUND = new Color(147, 112, 219);
+    private final Color SIDEBAR_COLOR = new Color(255, 178, 152); // Coral/peach color
+    private final Color BACKGROUND_COLOR = Color.WHITE; // White background
 
     public SyncCesar() {
         frame = new JFrame("SyncCesar");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(800, 600);
-        frame.getContentPane().setBackground(PURPLE_BACKGROUND);
+        frame.getContentPane().setBackground(BACKGROUND_COLOR);
         tasks = new ArrayList<>();
         eventos = new ArrayList<>();
 
@@ -40,7 +38,7 @@ public class SyncCesar {
 
     private void createRegistrationPanel() {
         JPanel registrationPanel = new JPanel(new GridBagLayout());
-        registrationPanel.setBackground(PURPLE_BACKGROUND);
+        registrationPanel.setBackground(BACKGROUND_COLOR);
     
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(10, 10, 10, 10);
@@ -99,7 +97,7 @@ public class SyncCesar {
         JButton loginOptionButton = new JButton("Já tem uma conta? Entrar");
         loginOptionButton.setBorderPainted(false);
         loginOptionButton.setContentAreaFilled(false);
-        loginOptionButton.setForeground(PURPLE_DARK);
+        loginOptionButton.setForeground(SIDEBAR_COLOR);
         loginOptionButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
         gbc.gridy = 5;
         registrationPanel.add(loginOptionButton, gbc);
@@ -131,7 +129,7 @@ public class SyncCesar {
     
         frame.getContentPane().removeAll();
         frame.add(registrationPanel);
-        frame.getContentPane().setBackground(PURPLE_BACKGROUND);
+        frame.getContentPane().setBackground(BACKGROUND_COLOR);
         frame.revalidate();
         frame.repaint();
     }
@@ -140,7 +138,7 @@ public class SyncCesar {
 
     private void createLoginPanel() {
         JPanel loginPanel = new JPanel(new GridBagLayout());
-        loginPanel.setBackground(PURPLE_BACKGROUND);
+        loginPanel.setBackground(BACKGROUND_COLOR);
     
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(10, 10, 10, 10);
@@ -188,7 +186,7 @@ public class SyncCesar {
         JButton forgotPasswordButton = new JButton("Esqueceu a senha?");
         forgotPasswordButton.setBorderPainted(false);
         forgotPasswordButton.setContentAreaFilled(false);
-        forgotPasswordButton.setForeground(PURPLE_DARK);
+        forgotPasswordButton.setForeground(SIDEBAR_COLOR);
         forgotPasswordButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
         gbc.gridy = 4;
         loginPanel.add(forgotPasswordButton, gbc);
@@ -196,7 +194,7 @@ public class SyncCesar {
         JButton registerOptionButton = new JButton("Criar uma conta");
         registerOptionButton.setBorderPainted(false);
         registerOptionButton.setContentAreaFilled(false);
-        registerOptionButton.setForeground(PURPLE_DARK);
+        registerOptionButton.setForeground(SIDEBAR_COLOR);
         registerOptionButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
         gbc.gridy = 5;
         loginPanel.add(registerOptionButton, gbc);
@@ -226,7 +224,7 @@ public class SyncCesar {
     
         frame.getContentPane().removeAll();
         frame.add(loginPanel);
-        frame.getContentPane().setBackground(PURPLE_BACKGROUND);
+        frame.getContentPane().setBackground(BACKGROUND_COLOR);
         frame.revalidate();
         frame.repaint();
     }
@@ -276,18 +274,17 @@ public class SyncCesar {
         frame.getContentPane().removeAll();
     
         JPanel mainPanel = new JPanel(new BorderLayout());
-        mainPanel.setBackground(PURPLE_BACKGROUND);
+        mainPanel.setBackground(Color.WHITE);
     
         JPanel sideMenu = new JPanel();
         sideMenu.setLayout(new BoxLayout(sideMenu, BoxLayout.Y_AXIS));
         sideMenu.setPreferredSize(new Dimension(150, frame.getHeight()));
-        sideMenu.setBorder(BorderFactory.createEtchedBorder());
-        sideMenu.setBackground(PURPLE_PRIMARY);
+        sideMenu.setBackground(SIDEBAR_COLOR);
     
         String[] menuItems = {"Dashboard", "Calendário", "Notificações", "Configurações"};
         cardLayout = new CardLayout();
         contentPanel = new JPanel(cardLayout);
-        contentPanel.setBackground(PURPLE_BACKGROUND);
+        contentPanel.setBackground(BACKGROUND_COLOR);
     
         JPanel dashboardPanel = createDashboardContent();
         JPanel calendarPanel = createCalendarContentWithHours();
@@ -305,18 +302,18 @@ public class SyncCesar {
             menuButton.setAlignmentX(Component.CENTER_ALIGNMENT);
             menuButton.setFocusPainted(false);
             menuButton.setBorderPainted(false);
-            menuButton.setBackground(PURPLE_PRIMARY);
+            menuButton.setBackground(SIDEBAR_COLOR);
             menuButton.setForeground(Color.WHITE);
     
             menuButton.addActionListener(e -> cardLayout.show(contentPanel, menuItem));
     
             menuButton.addMouseListener(new java.awt.event.MouseAdapter() {
                 public void mouseEntered(java.awt.event.MouseEvent evt) {
-                    menuButton.setBackground(PURPLE_LIGHT);
+                    menuButton.setBackground(new Color(255, 200, 180));
                 }
     
                 public void mouseExited(java.awt.event.MouseEvent evt) {
-                    menuButton.setBackground(PURPLE_PRIMARY);
+                    menuButton.setBackground(SIDEBAR_COLOR);
                 }
             });
     
@@ -328,10 +325,10 @@ public class SyncCesar {
         mainPanel.add(contentPanel, BorderLayout.CENTER);
     
         JPanel topPanel = new JPanel(new BorderLayout());
-        topPanel.setBackground(PURPLE_LIGHT);
+        topPanel.setBackground(SIDEBAR_COLOR);
     
         JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        searchPanel.setBackground(PURPLE_LIGHT);
+        searchPanel.setBackground(SIDEBAR_COLOR);
     
         JTextField searchField = new JTextField();
         searchField.setPreferredSize(new Dimension(200, 30));
@@ -364,16 +361,17 @@ public class SyncCesar {
 
     private JPanel createDashboardContent() {
         JPanel panel = new JPanel(new BorderLayout());
-        panel.setBackground(PURPLE_BACKGROUND);
+        panel.setBackground(Color.WHITE);
     
         JPanel topPanel = new JPanel(new BorderLayout());
-        topPanel.setBackground(PURPLE_BACKGROUND);
+        topPanel.setBackground(Color.WHITE);
     
-        JLabel titleLabel = new JLabel("Visão geral de cada processo", SwingConstants.CENTER);
-        titleLabel.setFont(new Font("Arial", Font.BOLD, 20));
-        titleLabel.setForeground(PURPLE_DARK);
+        JLabel titleLabel = new JLabel("Meu painel", SwingConstants.LEFT);
+        titleLabel.setFont(new Font("Arial", Font.BOLD, 24));
+        titleLabel.setForeground(Color.BLACK);
+        titleLabel.setBorder(BorderFactory.createEmptyBorder(20, 20, 10, 0));
         topPanel.add(titleLabel, BorderLayout.CENTER);
-
+    
         JLabel settingsLabel = new JLabel("⚙");
         settingsLabel.setFont(new Font("Segoe UI Emoji", Font.BOLD, 24));
         settingsLabel.setForeground(Color.BLACK);
@@ -389,102 +387,312 @@ public class SyncCesar {
     
         panel.add(topPanel, BorderLayout.NORTH);
     
-        JPanel mainContentPanel = new JPanel(new GridLayout(2, 1, 10, 10));
-        mainContentPanel.setBackground(PURPLE_BACKGROUND);
+        JPanel newBoardPanel = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2d = (Graphics2D) g.create();
+                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                
+                g2d.setColor(new Color(230, 230, 250));
+                g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 15, 15);
+                
+                g2d.dispose();
+            }
+        };
+        newBoardPanel.setLayout(new GridBagLayout());
+        newBoardPanel.setOpaque(false);
+        newBoardPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
     
-        JPanel progressPanel = new JPanel(new GridLayout(1, 3, 10, 10));
-        progressPanel.setBackground(PURPLE_BACKGROUND);
+        JPanel contentWrapper = new JPanel(new GridBagLayout());
+        contentWrapper.setOpaque(false);
     
-        progressPanel.add(createCircularTaskCard(
-            "Lançamento de Notas",
+        JLabel plusLabel = new JLabel("+");
+        plusLabel.setFont(new Font("Arial", Font.BOLD, 36));
+        plusLabel.setForeground(new Color(147, 112, 219));
+    
+        JLabel newBoardLabel = new JLabel("Criar novo quadro");
+        newBoardLabel.setFont(new Font("Arial", Font.PLAIN, 16));
+        newBoardLabel.setForeground(new Color(147, 112, 219));
+    
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.anchor = GridBagConstraints.CENTER;
+        contentWrapper.add(plusLabel, gbc);
+    
+        gbc.gridy = 1;
+        gbc.insets = new Insets(10, 0, 0, 0);
+        contentWrapper.add(newBoardLabel, gbc);
+    
+        newBoardPanel.add(contentWrapper);
+    
+        newBoardPanel.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                newBoardPanel.setBackground(new Color(220, 220, 240));
+                newBoardPanel.setCursor(new Cursor(Cursor.HAND_CURSOR));
+            }
+
+            @Override
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                newBoardPanel.setBackground(new Color(230, 230, 250));
+                newBoardPanel.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+            }
+
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                JOptionPane.showMessageDialog(frame, "Criar novo quadro");
+            }
+        });
+    
+        JPanel mainContentPanel = new JPanel(new GridLayout(1, 2, 20, 10));
+        mainContentPanel.setBackground(Color.WHITE);
+        mainContentPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+    
+        JPanel taskCardsPanel = new JPanel(new GridLayout(3, 1, 10, 10));
+        taskCardsPanel.setBackground(Color.WHITE);
+    
+        taskCardsPanel.add(createTaskCard(
+            "Lançamento de notas",
             50,
-            Color.ORANGE,
             Arrays.asList(
-                "01 - Turma B - Noite !",
-                "02 - Subir notas de Gestão B ✓",
-                "03 - Revisar eventuais erros",
-                "04 - Garantir entrega até o prazo"
+                "01 Turma B - Noite",
+                "02 Subir notas de Gestão B",
+                "03 Revisar eventuais erros no lançamento de notas reportados por professores.",
+                "04 Garantir que todos os professores entreguem as notas finais até o prazo estipulado."
             )
         ));
     
-        progressPanel.add(createCircularTaskCard(
+        taskCardsPanel.add(createTaskCard(
+            "Reuniões Mensais",
+            100,
+            Arrays.asList(
+                "01 Alinhamento Semestre",
+                "02 Reunião coordenação"
+            )
+        ));
+    
+        taskCardsPanel.add(createTaskCard(
             "Pagamentos",
             90,
-            Color.GREEN,
             Arrays.asList(
-                "01 - Atualizar lista de pagamentos ✓",
-                "02 - Confirmar transferências ✓",
-                "03 - Revisar relatórios financeiros"
+                "01 Conferir os relatórios de folha de pagamento dos professores e colaboradores.",
+                "02 Verificar possíveis atrasos de pagamento e tomar ações para regularizar."
             )
         ));
     
-        progressPanel.add(createCircularTaskCard(
-            "Reuniões Mensais ✓",
-            100,
-            Color.CYAN,
-            Arrays.asList(
-                "01 - Alinhamento Semestre✓",
-                "02 - Reunião Coordenação ✓"
-            )
-        ));
+        mainContentPanel.add(taskCardsPanel);
+        mainContentPanel.add(newBoardPanel);
     
-        mainContentPanel.add(progressPanel);
-    
-        JPanel taskSectionsPanel = new JPanel(new GridLayout(1, 3, 10, 10));
-        taskSectionsPanel.setBackground(PURPLE_BACKGROUND);
-    
-        taskSectionsPanel.add(createTaskSection("A Fazer", PURPLE_LIGHT));
-        taskSectionsPanel.add(createTaskSection("Em Progresso", Color.ORANGE));
-        taskSectionsPanel.add(createTaskSection("Concluído", Color.GREEN));
-    
-        mainContentPanel.add(taskSectionsPanel);
+        panel.add(topPanel, BorderLayout.NORTH);
         panel.add(mainContentPanel, BorderLayout.CENTER);
-    
-        JPanel notificationsPanel = buildNotificationPanel(cardLayout, contentPanel);
-        panel.add(notificationsPanel, BorderLayout.SOUTH);
     
         return panel;
     }
 
-    private JPanel createTaskSection(String title, Color backgroundColor) {
-
-        JPanel taskPanel = new JPanel(new BorderLayout());
-        taskPanel.setBackground(backgroundColor);
-        taskPanel.setBorder(BorderFactory.createLineBorder(PURPLE_DARK, 1));
-        taskPanel.setPreferredSize(new Dimension(120, 80));
-
-        JLabel titleLabel = new JLabel(title, SwingConstants.CENTER);
-        titleLabel.setFont(new Font("Arial", Font.BOLD, 12));
-        titleLabel.setForeground(Color.BLACK);
-        taskPanel.add(titleLabel, BorderLayout.NORTH);
-
-        JTextArea taskArea = new JTextArea();
-        taskArea.setLineWrap(true);
-        taskArea.setWrapStyleWord(true);
-        taskArea.setFont(new Font("Arial", Font.PLAIN, 10));
-        taskArea.setBorder(BorderFactory.createLineBorder(Color.GRAY));
-        taskArea.setPreferredSize(new Dimension(100, 40));
-
-        JScrollPane scrollPane = new JScrollPane(taskArea);
-        scrollPane.setPreferredSize(new Dimension(100, 40));
-        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-        taskPanel.add(scrollPane, BorderLayout.CENTER);
-
-        JButton addButton = new JButton("+ Add atividade");
-        addButton.setFocusPainted(false);
-        addButton.setBackground(PURPLE_PRIMARY);
-        addButton.setForeground(Color.WHITE);
-        addButton.setFont(new Font("Arial", Font.PLAIN, 10));
-        addButton.setPreferredSize(new Dimension(100, 20));
-        addButton.addActionListener(e -> {
-            String newTask = JOptionPane.showInputDialog("Digite uma nova tarefa:");
-            if (newTask != null && !newTask.trim().isEmpty()) {
-                taskArea.append(newTask + "\n");
+    private JPanel createTaskCard(String title, int progress, List<String> tasks) {
+        JPanel cardPanel = new JPanel(new BorderLayout()) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2d = (Graphics2D) g.create();
+                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                
+                // Create rounded rectangle for the background
+                g2d.setColor(getBackground());
+                g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 15, 15); // Added rounded corners
+                
+                g2d.dispose();
             }
-        });
-        taskPanel.add(addButton, BorderLayout.SOUTH);
-    
-        return taskPanel;
+        };
+        cardPanel.setBackground(Color.WHITE);
+        cardPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+
+        // Header with title and dropdown
+        JPanel headerPanel = new JPanel(new BorderLayout()) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2d = (Graphics2D) g.create();
+                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                
+                // Create rounded rectangle for the header
+                g2d.setColor(new Color(230, 230, 250));
+                g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 15, 15); // Added rounded corners
+                
+                g2d.dispose();
+            }
+        };
+        headerPanel.setOpaque(false);
+        headerPanel.setBorder(BorderFactory.createEmptyBorder(10, 15, 10, 15));
+
+        JLabel titleLabel = new JLabel(title);
+        titleLabel.setFont(new Font("Arial", Font.BOLD, 14));
+        headerPanel.add(titleLabel, BorderLayout.WEST);
+
+        JLabel dropdownIcon = new JLabel("▼");
+        headerPanel.add(dropdownIcon, BorderLayout.EAST);
+
+        // Main content panel (will contain both primary and secondary content)
+        JPanel contentPanel = new JPanel(new BorderLayout());
+        contentPanel.setBackground(Color.WHITE);
+
+        // Left side (primary content)
+        JPanel primaryPanel = new JPanel();
+        primaryPanel.setLayout(new BoxLayout(primaryPanel, BoxLayout.Y_AXIS));
+        primaryPanel.setBackground(Color.WHITE);
+
+        // Progress section
+        JPanel progressPanel = new JPanel(new BorderLayout());
+        progressPanel.setBackground(Color.WHITE);
+        progressPanel.setBorder(BorderFactory.createEmptyBorder(10, 15, 10, 15));
+
+        JLabel progressLabel = new JLabel("Tarefa Concluída: " + progress + "%");
+        progressLabel.setFont(new Font("Arial", Font.PLAIN, 12));
+
+        JProgressBar progressBar = new JProgressBar(0, 100);
+        progressBar.setValue(progress);
+        progressBar.setStringPainted(false);
+        progressBar.setPreferredSize(new Dimension(200, 5));
+        progressBar.setBackground(Color.LIGHT_GRAY);
+        progressBar.setForeground(new Color(230, 230, 250));
+
+        progressPanel.add(progressLabel, BorderLayout.NORTH);
+        progressPanel.add(progressBar, BorderLayout.CENTER);
+
+        primaryPanel.add(progressPanel);
+
+        // Additional info
+        JPanel infoPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        infoPanel.setBackground(Color.WHITE);
+        infoPanel.add(new JLabel("Tempo total: 5 dias"));
+        primaryPanel.add(infoPanel);
+
+        JPanel warningPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        warningPanel.setBackground(Color.WHITE);
+        warningPanel.add(new JLabel("Atraso 20% Turma A"));
+        primaryPanel.add(warningPanel);
+
+        // Right side (secondary content)
+        JPanel secondaryPanel = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2d = (Graphics2D) g.create();
+                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                
+                g2d.setColor(new Color(245, 245, 255));
+                g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 15, 15);
+                
+                g2d.dispose();
+            }
+        };
+        secondaryPanel.setLayout(new BoxLayout(secondaryPanel, BoxLayout.Y_AXIS));
+        secondaryPanel.setOpaque(false);
+        secondaryPanel.setBorder(BorderFactory.createEmptyBorder(10, 15, 10, 15));
+
+        for (String task : tasks) {
+            JPanel taskRow = new JPanel(new BorderLayout());
+            taskRow.setBackground(new Color(245, 245, 255));
+            
+            // Left side with task text
+            JLabel taskLabel = new JLabel(task);
+            taskLabel.setFont(new Font("Arial", Font.PLAIN, 12));
+            taskRow.add(taskLabel, BorderLayout.CENTER);
+            
+            // Right side panel for status icon and notification button
+            JPanel rightPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 5, 0));
+            rightPanel.setBackground(new Color(245, 245, 255));
+            
+            // Add notification button for specific task
+            if (task.contains("Garantir que todos os professores entreguem")) {
+                JButton notifyButton = new JButton("notificar pendência");
+                notifyButton.setFont(new Font("Arial", Font.BOLD, 11));
+                notifyButton.setBackground(new Color(220, 53, 69)); // Solid red background
+                notifyButton.setForeground(Color.WHITE);
+                notifyButton.setOpaque(true); // Make sure the background is visible
+                notifyButton.setBorderPainted(false); // Remove border
+                notifyButton.setFocusPainted(false); // Remove focus border
+                notifyButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+                
+                // Add hover effect
+                notifyButton.addMouseListener(new java.awt.event.MouseAdapter() {
+                    @Override
+                    public void mouseEntered(java.awt.event.MouseEvent evt) {
+                        notifyButton.setBackground(new Color(189, 33, 48)); // Darker red on hover
+                    }
+
+                    @Override
+                    public void mouseExited(java.awt.event.MouseEvent evt) {
+                        notifyButton.setBackground(new Color(220, 53, 69)); // Back to original red
+                    }
+                });
+                
+                notifyButton.addActionListener(e -> {
+                    JOptionPane.showMessageDialog(frame, 
+                        "Notificação enviada", 
+                        "Sucesso", 
+                        JOptionPane.INFORMATION_MESSAGE);
+                });
+                
+                rightPanel.add(notifyButton);
+            }
+            
+            // Add status icon
+            JLabel statusIcon = new JLabel();
+            if (task.startsWith("01")) {
+                statusIcon.setText("⚠"); // Warning icon
+            } else if (task.startsWith("02")) {
+                statusIcon.setText("✓"); // Checkmark
+            } else if (task.startsWith("03") || task.startsWith("04")) {
+                statusIcon.setText("✗"); // X mark
+            }
+            statusIcon.setFont(new Font("Arial", Font.PLAIN, 12));
+            rightPanel.add(statusIcon);
+            
+            taskRow.add(rightPanel, BorderLayout.EAST);
+            
+            secondaryPanel.add(taskRow);
+            secondaryPanel.add(Box.createRigidArea(new Dimension(0, 5)));
+        }
+
+        // Actions panel with icons
+        JPanel actionsPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        actionsPanel.setBackground(Color.WHITE);
+
+        JPanel buttonGroup = new JPanel(new FlowLayout(FlowLayout.RIGHT, 5, 0)) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2d = (Graphics2D) g.create();
+                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                
+                g2d.setColor(new Color(255, 192, 203));
+                g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 10, 10);
+                
+                g2d.dispose();
+            }
+        };
+        buttonGroup.setOpaque(false);
+        buttonGroup.setBorder(BorderFactory.createEmptyBorder(2, 5, 2, 5));
+
+        JLabel okLabel = new JLabel("OK");
+        okLabel.setFont(new Font("Arial", Font.BOLD, 12));
+        okLabel.setForeground(Color.BLACK);
+
+        JLabel menuLabel = new JLabel("☰");
+        menuLabel.setFont(new Font("Arial", Font.BOLD, 12));
+        menuLabel.setForeground(Color.BLACK);
+
+        buttonGroup.add(okLabel);
+        buttonGroup.add(menuLabel);
+        actionsPanel.add(buttonGroup);
+
+        // Combine everything
+        contentPanel.add(primaryPanel, BorderLayout.WEST);
+        contentPanel.add(secondaryPanel, BorderLayout.CENTER);
+
+        cardPanel.add(headerPanel, BorderLayout.NORTH);
+        cardPanel.add(contentPanel, BorderLayout.CENTER);
+        cardPanel.add(actionsPanel, BorderLayout.SOUTH);
+
+        return cardPanel;
     }
 
     private JPanel createGraphPanel(String title, String subtitle, int percentage, Color progressColor) {
@@ -556,13 +764,13 @@ public class SyncCesar {
         circularTaskPanel.setLayout(new BoxLayout(circularTaskPanel, BoxLayout.Y_AXIS));
         circularTaskPanel.setBackground(new Color(240, 240, 255));
         circularTaskPanel.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(PURPLE_LIGHT, 2),
+            BorderFactory.createLineBorder(SIDEBAR_COLOR, 2),
             BorderFactory.createEmptyBorder(15, 15, 15, 15)
         ));
     
         JLabel titleLabel = new JLabel(title + " ▼");
         titleLabel.setFont(new Font("Arial", Font.BOLD, 14));
-        titleLabel.setForeground(PURPLE_DARK);
+        titleLabel.setForeground(SIDEBAR_COLOR);
         titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
     
         JPanel circularProgressPanel = new JPanel() {
@@ -585,7 +793,7 @@ public class SyncCesar {
                 g2d.setColor(new Color(240, 240, 255));
                 g2d.fillOval(x + 10, y + 10, diameter - 20, diameter - 20);
     
-                g2d.setColor(PURPLE_DARK);
+                g2d.setColor(SIDEBAR_COLOR);
                 g2d.setFont(new Font("Arial", Font.BOLD, 14));
                 String text = percentage + "%";
                 FontMetrics fm = g2d.getFontMetrics();
@@ -632,7 +840,7 @@ public class SyncCesar {
 
                     JScrollPane scrollPane = new JScrollPane(tasksPanel);
                     scrollPane.setPreferredSize(new Dimension(180, 100));
-                    scrollPane.setBorder(BorderFactory.createLineBorder(PURPLE_LIGHT));
+                    scrollPane.setBorder(BorderFactory.createLineBorder(SIDEBAR_COLOR));
     
                     circularTaskPanel.add(scrollPane);
                     circularTaskPanel.revalidate();
@@ -699,16 +907,16 @@ public class SyncCesar {
 
     private JPanel buildNotificationPanel(CardLayout cardLayout, JPanel contentPanel) {
         JPanel panel = new JPanel(new BorderLayout());
-        panel.setBackground(PURPLE_BACKGROUND);
+        panel.setBackground(BACKGROUND_COLOR);
     
         JLabel titleLabel = new JLabel("Notificações para essa semana", SwingConstants.CENTER);
         titleLabel.setFont(new Font("Segoe UI Emoji", Font.BOLD, 16));
-        titleLabel.setForeground(PURPLE_DARK);
+        titleLabel.setForeground(SIDEBAR_COLOR);
         panel.add(titleLabel, BorderLayout.NORTH);
     
         JPanel notificationList = new JPanel();
         notificationList.setLayout(new BoxLayout(notificationList, BoxLayout.Y_AXIS));
-        notificationList.setBackground(PURPLE_BACKGROUND);
+        notificationList.setBackground(BACKGROUND_COLOR);
     
         notificationList.add(createNotificationCard(
             "🔔 Lembrete de prazo",
@@ -734,7 +942,7 @@ public class SyncCesar {
     
         JLabel moreNotificationsLabel = new JLabel("Há mais notificações... Clique aqui para ver todas");
         moreNotificationsLabel.setFont(new Font("Segoe UI Emoji", Font.BOLD, 14));
-        moreNotificationsLabel.setForeground(PURPLE_DARK);
+        moreNotificationsLabel.setForeground(SIDEBAR_COLOR);
         moreNotificationsLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
     
         moreNotificationsLabel.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -745,12 +953,12 @@ public class SyncCesar {
     
             @Override
             public void mouseEntered(java.awt.event.MouseEvent e) {
-                moreNotificationsLabel.setForeground(PURPLE_LIGHT);
+                moreNotificationsLabel.setForeground(new Color(255, 200, 180));
             }
     
             @Override
             public void mouseExited(java.awt.event.MouseEvent e) {
-                moreNotificationsLabel.setForeground(PURPLE_DARK);
+                moreNotificationsLabel.setForeground(SIDEBAR_COLOR);
             }
         });
     
@@ -769,7 +977,7 @@ public class SyncCesar {
         sectionPanel.setLayout(new BoxLayout(sectionPanel, BoxLayout.Y_AXIS));
         sectionPanel.setBackground(Color.WHITE);
         sectionPanel.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(PURPLE_PRIMARY, 2),
+            BorderFactory.createLineBorder(SIDEBAR_COLOR, 2),
             BorderFactory.createEmptyBorder(10, 10, 10, 10)
         ));
 
@@ -777,13 +985,13 @@ public class SyncCesar {
         JLabel titleLabel = new JLabel(title);
         titleLabel.setFont(new Font("Arial", Font.BOLD, 16));
         titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-        titleLabel.setForeground(PURPLE_DARK);
+        titleLabel.setForeground(SIDEBAR_COLOR);
 
         JProgressBar progressBar = new JProgressBar(0, 100);
         progressBar.setValue(percentage);
         progressBar.setStringPainted(true);
         progressBar.setString(percentage + "%");
-        progressBar.setForeground(PURPLE_PRIMARY);
+        progressBar.setForeground(SIDEBAR_COLOR);
         progressBar.setBackground(Color.LIGHT_GRAY);
         progressBar.setPreferredSize(new Dimension(150, 20));
         progressBar.setMaximumSize(new Dimension(150, 20));
@@ -799,7 +1007,7 @@ public class SyncCesar {
 
     private JPanel createWeekDaysHeader() {
         JPanel weekDaysPanel = new JPanel(new GridLayout(1, 7));
-        weekDaysPanel.setBackground(PURPLE_PRIMARY);
+        weekDaysPanel.setBackground(SIDEBAR_COLOR);
     
         String[] daysOfWeek = {"Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"};
         for (String day : daysOfWeek) {
@@ -815,12 +1023,12 @@ public class SyncCesar {
     private JPanel createSettingsContent() {
         JPanel settingsPanel = new JPanel();
         settingsPanel.setLayout(new BoxLayout(settingsPanel, BoxLayout.Y_AXIS));
-        settingsPanel.setBackground(PURPLE_BACKGROUND);
+        settingsPanel.setBackground(BACKGROUND_COLOR);
         settingsPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
     
         JLabel titleLabel = new JLabel("Configurações do Sistema");
         titleLabel.setFont(new Font("Arial", Font.BOLD, 28));
-        titleLabel.setForeground(PURPLE_DARK);
+        titleLabel.setForeground(SIDEBAR_COLOR);
         titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         settingsPanel.add(titleLabel);
         settingsPanel.add(Box.createRigidArea(new Dimension(0, 20)));
@@ -843,7 +1051,7 @@ public class SyncCesar {
 
         JButton saveButton = new JButton("Salvar Alterações");
         saveButton.setFont(new Font("Arial", Font.BOLD, 18));
-        saveButton.setBackground(PURPLE_PRIMARY);
+        saveButton.setBackground(SIDEBAR_COLOR);
         saveButton.setForeground(Color.WHITE);
         saveButton.setAlignmentX(Component.CENTER_ALIGNMENT);
         saveButton.addActionListener(e -> {
@@ -866,7 +1074,7 @@ public class SyncCesar {
         JPanel panel = new JPanel();
         panel.setLayout(new BorderLayout());
         panel.setBackground(Color.WHITE);
-        panel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(PURPLE_LIGHT), "Perfil do Usuário"));
+        panel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(SIDEBAR_COLOR), "Perfil do Usuário"));
     
         JPanel profileInfoPanel = new JPanel(new GridLayout(3, 2, 10, 10));
         profileInfoPanel.setBackground(Color.WHITE);
@@ -895,7 +1103,7 @@ public class SyncCesar {
     
         JButton resetPasswordButton = new JButton("Redefinir Senha");
         resetPasswordButton.setFont(new Font("Arial", Font.BOLD, 16));
-        resetPasswordButton.setBackground(PURPLE_PRIMARY);
+        resetPasswordButton.setBackground(SIDEBAR_COLOR);
         resetPasswordButton.setForeground(Color.WHITE);
         resetPasswordButton.addActionListener(e -> JOptionPane.showMessageDialog(panel, "Funcionalidade para redefinir senha."));
     
@@ -909,7 +1117,7 @@ public class SyncCesar {
     private JPanel createThemeSection() {
         JPanel panel = new JPanel(new GridLayout(1, 2, 10, 10));
         panel.setBackground(Color.WHITE);
-        panel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(PURPLE_LIGHT), "Tema"));
+        panel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(SIDEBAR_COLOR), "Tema"));
     
         JButton lightThemeButton = new JButton("Claro");
         JButton darkThemeButton = new JButton("Escuro");
@@ -932,7 +1140,7 @@ public class SyncCesar {
     private JPanel createLanguageSection() {
         JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         panel.setBackground(Color.WHITE);
-        panel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(PURPLE_LIGHT), "Idioma"));
+        panel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(SIDEBAR_COLOR), "Idioma"));
     
         JLabel languageLabel = new JLabel("Selecione o idioma:");
         languageLabel.setFont(new Font("Arial", Font.PLAIN, 16));
@@ -953,7 +1161,7 @@ public class SyncCesar {
     private JPanel createAccessibilitySection() {
         JPanel panel = new JPanel(new BorderLayout());
         panel.setBackground(Color.WHITE);
-        panel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(PURPLE_LIGHT), "Acessibilidade"));
+        panel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(SIDEBAR_COLOR), "Acessibilidade"));
     
         JLabel fontSizeLabel = new JLabel("Tamanho da Fonte:");
         fontSizeLabel.setFont(new Font("Arial", Font.PLAIN, 16));
@@ -1019,7 +1227,7 @@ public class SyncCesar {
 
         JPanel calendarGrid = new JPanel(new BorderLayout());
         JPanel dayHeaders = new JPanel(new GridLayout(1, 8));
-        dayHeaders.setBackground(PURPLE_PRIMARY);
+        dayHeaders.setBackground(SIDEBAR_COLOR);
     
         JLabel emptyLabel = new JLabel("");
         dayHeaders.add(emptyLabel);
@@ -1035,7 +1243,7 @@ public class SyncCesar {
         calendarGrid.add(dayHeaders, BorderLayout.NORTH);
     
         JPanel timeAndDays = new JPanel(new GridLayout(24, 8));
-        timeAndDays.setBackground(PURPLE_BACKGROUND);
+        timeAndDays.setBackground(BACKGROUND_COLOR);
     
         Map<String, Map<String, List<String>>> eventsByMonth = new HashMap<>();
         String currentMonthKey = getMonthKey(currentMonth);
@@ -1048,13 +1256,13 @@ public class SyncCesar {
         for (int h = 0; h < 24; h++) {
             JLabel timeLabel = new JLabel(String.format("%02d:00", h), SwingConstants.CENTER);
             timeLabel.setFont(new Font("Arial", Font.PLAIN, 12));
-            timeLabel.setForeground(PURPLE_DARK);
-            timeLabel.setBorder(BorderFactory.createMatteBorder(1, 1, 1, 1, PURPLE_PRIMARY));
+            timeLabel.setForeground(SIDEBAR_COLOR);
+            timeLabel.setBorder(BorderFactory.createMatteBorder(1, 1, 1, 1, SIDEBAR_COLOR));
             timeAndDays.add(timeLabel);
     
             for (int d = 0; d < 7; d++) {
                 JPanel cellPanel = new JPanel(new BorderLayout());
-                cellPanel.setBorder(BorderFactory.createMatteBorder(1, 1, 1, 1, PURPLE_PRIMARY));
+                cellPanel.setBorder(BorderFactory.createMatteBorder(1, 1, 1, 1, SIDEBAR_COLOR));
                 cellPanel.setBackground(Color.WHITE);
     
                 JPanel eventPanel = new JPanel();
@@ -1071,7 +1279,7 @@ public class SyncCesar {
                     for (String event : dayEvents) {
                         JLabel eventLabel = new JLabel(event);
                         eventLabel.setFont(new Font("Arial", Font.PLAIN, 10));
-                        eventLabel.setForeground(PURPLE_DARK);
+                        eventLabel.setForeground(SIDEBAR_COLOR);
 
                         eventLabel.addMouseListener(new java.awt.event.MouseAdapter() {
                             @Override
@@ -1112,7 +1320,7 @@ public class SyncCesar {
     
                             JLabel eventLabel = new JLabel(event);
                             eventLabel.setFont(new Font("Arial", Font.PLAIN, 10));
-                            eventLabel.setForeground(PURPLE_DARK);
+                            eventLabel.setForeground(SIDEBAR_COLOR);
 
                             eventLabel.addMouseListener(new java.awt.event.MouseAdapter() {
                                 @Override
@@ -1152,7 +1360,7 @@ public class SyncCesar {
         panel.add(calendarGrid, BorderLayout.CENTER);
 
         JPanel bottomPanel = new JPanel();
-        bottomPanel.setBackground(PURPLE_BACKGROUND);
+        bottomPanel.setBackground(BACKGROUND_COLOR);
     
         JButton addEventButton = new JButton("Adicionar Evento");
         addEventButton.addActionListener(e -> showAddEventDialog(timeAndDays));
@@ -1312,7 +1520,7 @@ private void showAddNoteDialog() {
 
         JPanel updatedCalendar = new JPanel(new BorderLayout());
         JPanel timeAndDays = new JPanel(new GridLayout(24, 8));
-        timeAndDays.setBackground(PURPLE_BACKGROUND);
+        timeAndDays.setBackground(BACKGROUND_COLOR);
     
         Calendar tempCalendar = (Calendar) currentMonth.clone();
         tempCalendar.set(Calendar.DAY_OF_MONTH, 1);
@@ -1322,7 +1530,8 @@ private void showAddNoteDialog() {
         for (int h = 0; h < 24; h++) {
             JLabel timeLabel = new JLabel(String.format("%02d:00", h), SwingConstants.CENTER);
             timeLabel.setFont(new Font("Arial", Font.PLAIN, 12));
-            timeLabel.setForeground(PURPLE_DARK);
+            timeLabel.setForeground(SIDEBAR_COLOR);
+            timeLabel.setBorder(BorderFactory.createMatteBorder(1, 1, 1, 1, SIDEBAR_COLOR));
             timeAndDays.add(timeLabel);
     
             for (int d = 0; d < 7; d++) {
@@ -1359,7 +1568,7 @@ private void showAddNoteDialog() {
             if (evento.getData().equals(dateKey)) {
                 JLabel eventLabel = new JLabel(evento.getTitulo());
                 eventLabel.setFont(new Font("Arial", Font.PLAIN, 10));
-                eventLabel.setForeground(PURPLE_DARK);
+                eventLabel.setForeground(SIDEBAR_COLOR);
     
                 eventPanel.add(eventLabel);
             }
@@ -1377,7 +1586,7 @@ private void showAddNoteDialog() {
             if (nota.getData().equals(dateKey)) {
                 JLabel noteLabel = new JLabel(nota.getObservacoes());
                 noteLabel.setFont(new Font("Arial", Font.ITALIC, 10));
-                noteLabel.setForeground(PURPLE_LIGHT);
+                noteLabel.setForeground(SIDEBAR_COLOR);
     
                 notePanel.add(noteLabel);
             }
@@ -1388,17 +1597,17 @@ private void showAddNoteDialog() {
     
     private JPanel createNotificationsContent() {
         JPanel panel = new JPanel(new BorderLayout());
-        panel.setBackground(PURPLE_BACKGROUND);
+        panel.setBackground(BACKGROUND_COLOR);
     
         JPanel headerPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        headerPanel.setBackground(PURPLE_BACKGROUND);
+        headerPanel.setBackground(BACKGROUND_COLOR);
     
         ImageIcon bellIcon = new ImageIcon("resources/icons8-sino-64.png");
         JLabel bellLabel = new JLabel(bellIcon);
     
         JLabel titleLabel = new JLabel("Notificações");
         titleLabel.setFont(new Font("Arial", Font.BOLD, 24));
-        titleLabel.setForeground(PURPLE_DARK);
+        titleLabel.setForeground(SIDEBAR_COLOR);
     
         headerPanel.add(bellLabel);
         headerPanel.add(titleLabel);
@@ -1407,7 +1616,7 @@ private void showAddNoteDialog() {
     
         JPanel notificationList = new JPanel();
         notificationList.setLayout(new BoxLayout(notificationList, BoxLayout.Y_AXIS));
-        notificationList.setBackground(PURPLE_BACKGROUND);
+        notificationList.setBackground(BACKGROUND_COLOR);
     
         notificationList.add(createStyledNotificationCard(
             "🔔 Lembrete de prazo",
@@ -1476,13 +1685,13 @@ private void showAddNoteDialog() {
         JPanel notificationCard = new JPanel(new BorderLayout());
         notificationCard.setBackground(Color.WHITE);
         notificationCard.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(PURPLE_LIGHT, 1),
+            BorderFactory.createLineBorder(SIDEBAR_COLOR, 1),
             BorderFactory.createEmptyBorder(15, 15, 15, 15)
         ));
 
         JLabel titleLabel = new JLabel(title);
         titleLabel.setFont(new Font("Segoe UI Emoji", Font.BOLD, 18));
-        titleLabel.setForeground(PURPLE_DARK);
+        titleLabel.setForeground(SIDEBAR_COLOR);
 
         JLabel messageLabel = new JLabel("<html>" + message + "</html>");
         messageLabel.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 14));
@@ -1723,6 +1932,7 @@ private void showAddNoteDialog() {
                     }
                 } catch (Exception e) {
                     System.err.println("Erro ao processar data do evento: " + evento.getTitulo());
+                    e.printStackTrace();
                 }
             }
         }
