@@ -1,5 +1,0 @@
-geo@gmail.com,testetes,verde
-geo@gmail.com.br,testee,rosa
-geo123,12345,teste
-geo123,12345,teste1
-teste123,teste123,teste
